@@ -21,6 +21,19 @@ const props = defineProps({
   codeKey: {
     type: String,
     default: 'code'
+  },
+  // Props để điều khiển hiển thị action buttons theo quyền
+  showEdit: {
+    type: Boolean,
+    default: true
+  },
+  showView: {
+    type: Boolean,
+    default: true
+  },
+  showDelete: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -181,10 +194,10 @@ defineExpose({ expandAll, collapseAll })
               </span>
               
               <!-- Actions -->
-              <div class="tree-actions">
-                <button class="action-btn edit" @click="$emit('edit', node)" title="Sửa">✏️</button>
-                <button class="action-btn view" @click="$emit('view', node)" title="Xem">👁️</button>
-                <button class="action-btn delete" @click="$emit('delete', node)" title="Xóa">🗑️</button>
+              <div class="tree-actions" v-if="showEdit || showView || showDelete">
+                <button v-if="showEdit" class="action-btn edit" @click="$emit('edit', node)" title="Sửa">✏️</button>
+                <button v-if="showView" class="action-btn view" @click="$emit('view', node)" title="Xem">👁️</button>
+                <button v-if="showDelete" class="action-btn delete" @click="$emit('delete', node)" title="Xóa">🗑️</button>
               </div>
             </div>
             
@@ -227,10 +240,10 @@ defineExpose({ expandAll, collapseAll })
                       <span class="tree-title">{{ child[labelKey] }}</span>
                     </span>
                     
-                    <div class="tree-actions">
-                      <button class="action-btn edit" @click="$emit('edit', child)" title="Sửa">✏️</button>
-                      <button class="action-btn view" @click="$emit('view', child)" title="Xem">👁️</button>
-                      <button class="action-btn delete" @click="$emit('delete', child)" title="Xóa">🗑️</button>
+                    <div class="tree-actions" v-if="showEdit || showView || showDelete">
+                      <button v-if="showEdit" class="action-btn edit" @click="$emit('edit', child)" title="Sửa">✏️</button>
+                      <button v-if="showView" class="action-btn view" @click="$emit('view', child)" title="Xem">👁️</button>
+                      <button v-if="showDelete" class="action-btn delete" @click="$emit('delete', child)" title="Xóa">🗑️</button>
                     </div>
                   </div>
                   
@@ -263,10 +276,10 @@ defineExpose({ expandAll, collapseAll })
                             <span class="tree-title">{{ grandChild[labelKey] }}</span>
                           </span>
                           
-                          <div class="tree-actions">
-                            <button class="action-btn edit" @click="$emit('edit', grandChild)" title="Sửa">✏️</button>
-                            <button class="action-btn view" @click="$emit('view', grandChild)" title="Xem">👁️</button>
-                            <button class="action-btn delete" @click="$emit('delete', grandChild)" title="Xóa">🗑️</button>
+                          <div class="tree-actions" v-if="showEdit || showView || showDelete">
+                            <button v-if="showEdit" class="action-btn edit" @click="$emit('edit', grandChild)" title="Sửa">✏️</button>
+                            <button v-if="showView" class="action-btn view" @click="$emit('view', grandChild)" title="Xem">👁️</button>
+                            <button v-if="showDelete" class="action-btn delete" @click="$emit('delete', grandChild)" title="Xóa">🗑️</button>
                           </div>
                         </div>
                       </div>

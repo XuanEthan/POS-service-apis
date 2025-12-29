@@ -5,7 +5,6 @@ import {
   saveUser, 
   saveUserPermissions,
   clearTokens,
-  isTokenExpired,
   getPermissionsFromToken
 } from '@/utils/auth'
 
@@ -28,7 +27,7 @@ function onRefreshed(newToken) {
 }
 
 /**
- * Refresh token
+ * Refresh token - gọi API để lấy token mới
  */
 async function refreshToken() {
   const accessToken = getAccessToken()
@@ -51,6 +50,7 @@ async function refreshToken() {
   
   const data = await response.json()
   
+  // API trả về: { isSuccess, code, message, userId, object, accessToken, refreshToken }
   if (data.isSuccess && data.accessToken && data.refreshToken) {
     saveTokens(data.accessToken, data.refreshToken)
     
@@ -72,35 +72,9 @@ async function refreshToken() {
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`
   
-  let accessToken = getAccessToken()
-  
-  // Kiểm tra token hết hạn và refresh nếu cần
-  if (accessToken && isTokenExpired(accessToken)) {
-    if (!isRefreshing) {
-      isRefreshing = true
-      try {
-        accessToken = await refreshToken()
-        onRefreshed(accessToken)
-      } catch (error) {
-        clearTokens()
-        window.location.href = '/login'
-        return {
-          isSuccess: false,
-          code: 401,
-          message: 'Session expired. Please login again.',
-          object: null
-        }
-      } finally {
-        isRefreshing = false
-      }
-    } else {
-      // Đợi refresh token hoàn thành
-      accessToken = await new Promise(resolve => {
-        subscribeTokenRefresh(token => resolve(token))
-      })
-    }
-  }
-  
+  const accessToken = getAccessToken()
+  const refreshTokenValue = getRefreshToken()
+  console.log(accessToken , refreshTokenValue);
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -116,10 +90,8 @@ async function request(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, config)
-    
-    // Handle 401 Unauthorized
+    // Handle 401 Unauthorized - gọi refresh token
     if (response.status === 401) {
-      // Thử refresh token
       if (!isRefreshing) {
         isRefreshing = true
         try {
@@ -129,12 +101,23 @@ async function request(endpoint, options = {}) {
           // Retry request với token mới
           config.headers['Authorization'] = `Bearer ${newToken}`
           const retryResponse = await fetch(url, config)
-          const retryText = await retryResponse.text()
           
+          if (!retryResponse.ok) {
+            // Nếu retry vẫn lỗi, redirect về login
+            clearTokens()
+            window.location.href = '/login'
+            return {
+              isSuccess: false,
+              code: 401,
+              message: 'Session expired. Please login again.',
+              object: null
+            }
+          }
+          
+          const retryText = await retryResponse.text()
           if (!retryText || retryText.trim() === '') {
             return { isSuccess: true, code: 0, message: 'Success', object: [] }
           }
-          
           return JSON.parse(retryText)
         } catch (error) {
           clearTokens()
@@ -148,6 +131,18 @@ async function request(endpoint, options = {}) {
         } finally {
           isRefreshing = false
         }
+      } else {
+        // Đang refresh, đợi hoàn thành rồi retry
+        const newToken = await new Promise(resolve => {
+          subscribeTokenRefresh(token => resolve(token))
+        })
+        config.headers['Authorization'] = `Bearer ${newToken}`
+        const retryResponse = await fetch(url, config)
+        const retryText = await retryResponse.text()
+        if (!retryText || retryText.trim() === '') {
+          return { isSuccess: true, code: 0, message: 'Success', object: [] }
+        }
+        return JSON.parse(retryText)
       }
     }
     

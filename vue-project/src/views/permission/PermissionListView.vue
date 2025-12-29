@@ -75,20 +75,21 @@ onMounted(() => {
 
     <!-- Toolbar -->
     <div class="page-toolbar">
-      <button class="btn btn-primary"><span>+</span> Thêm mới</button>
+      <!-- <button class="btn btn-primary"><span>+</span> Thêm mới</button>
       <button class="btn btn-danger">Xóa đã chọn</button>
       <button class="btn btn-warning">Xuất danh sách</button>
-      <button class="btn btn-secondary" @click="fetchPermissions">🔄 Tải lại</button>
+      <button class="btn btn-secondary" @click="fetchPermissions">🔄 Tải lại</button> -->
     </div>
 
     <!-- Filters -->
-    <div class="page-filters">
-      <div class="input-group">
-        <input v-model="filterKeyword" class="form-control" placeholder="Tìm kiếm theo mã hoặc tên quyền..." />
-        <button class="btn btn-primary">Tìm kiếm</button>
-      </div>
-      <div class="tree-stats">
-        <span>Tổng: <strong>{{ permissions.length }}</strong> quyền</span>
+    <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+      <input v-model="filterKeyword" class="form-control" style="flex: 1; max-width: 400px;" placeholder="Tìm theo mã hoặc tên quyền..." />
+      <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;">
+        <i class="fas fa-search"></i> Tìm kiếm
+      </button>
+      <div style="flex: 1;"></div>
+      <div class="tree-stats" style="flex: 0 0 auto; font-size: 12px; color: #666;">
+        Tổng: <strong>{{ permissions.length }}</strong> quyền
       </div>
     </div>
 
@@ -109,6 +110,9 @@ onMounted(() => {
         parent-key="parentId"
         label-key="title"
         code-key="code"
+        :show-edit="false"
+        :show-view="true"
+        :show-delete="false"
         @edit="handleEdit"
         @delete="handleDelete"
         @view="handleView"
@@ -119,30 +123,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page-filters {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: #fff;
-  border-bottom: 1px solid #e9ecef;
-  gap: 20px;
-}
-
-.page-filters .input-group {
-  flex: 1;
-  max-width: 400px;
-}
-
-.tree-stats {
-  font-size: 13px;
-  color: #666;
-}
-
-.tree-stats strong {
-  color: #333;
-}
-
 .loading-indicator {
   padding: 20px;
   text-align: center;
@@ -157,7 +137,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   margin: 10px 20px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .page-content {

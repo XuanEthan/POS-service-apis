@@ -1,9 +1,21 @@
 import { 
   saveTokens, 
   saveUser, 
-  saveUserPermissions, 
+  saveUserPermissions,
+  saveIsAdmin,
+  saveTokenInfo,
+  saveUserName,
+  saveUserId,
+  saveUserRole,
+  saveRoleId,
   clearTokens,
   getPermissionsFromToken,
+  getIsAdminFromToken,
+  extractTokenInfo,
+  getUserNameFromToken,
+  getUserIdFromToken,
+  getRoleFromToken,
+  getRoleIdFromToken,
   getAccessToken,
   getRefreshToken
 } from '@/utils/auth'
@@ -39,10 +51,35 @@ export async function login(username, password) {
         saveUser(data.object)
       }
       
-      // Lấy và lưu permissions từ token
+      // Lấy và lưu thông tin từ token
       if (data.accessToken) {
+        // Lưu permissions
         const permissions = getPermissionsFromToken(data.accessToken)
         saveUserPermissions(permissions)
+        
+        // Lưu trạng thái admin
+        const isAdminValue = getIsAdminFromToken(data.accessToken)
+        saveIsAdmin(isAdminValue)
+        
+        // Lưu username (unique_name)
+        const userName = getUserNameFromToken(data.accessToken)
+        if (userName) saveUserName(userName)
+        
+        // Lưu user ID (nameid)
+        const userId = getUserIdFromToken(data.accessToken)
+        if (userId) saveUserId(userId)
+        
+        // Lưu role name
+        const roleName = getRoleFromToken(data.accessToken)
+        if (roleName) saveUserRole(roleName)
+        
+        // Lưu role ID
+        const roleId = getRoleIdFromToken(data.accessToken)
+        if (roleId) saveRoleId(roleId)
+        
+        // Lưu thông tin đầy đủ từ token
+        const tokenInfo = extractTokenInfo(data.accessToken)
+        saveTokenInfo(tokenInfo)
       }
     }
     
@@ -100,10 +137,35 @@ export async function refreshToken() {
         saveUser(data.object)
       }
       
-      // Cập nhật permissions từ token mới
+      // Cập nhật thông tin từ token mới
       if (data.accessToken) {
+        // Lưu permissions
         const permissions = getPermissionsFromToken(data.accessToken)
         saveUserPermissions(permissions)
+        
+        // Lưu trạng thái admin
+        const isAdminValue = getIsAdminFromToken(data.accessToken)
+        saveIsAdmin(isAdminValue)
+        
+        // Lưu username (unique_name)
+        const userName = getUserNameFromToken(data.accessToken)
+        if (userName) saveUserName(userName)
+        
+        // Lưu user ID (nameid)
+        const userId = getUserIdFromToken(data.accessToken)
+        if (userId) saveUserId(userId)
+        
+        // Lưu role name
+        const roleName = getRoleFromToken(data.accessToken)
+        if (roleName) saveUserRole(roleName)
+        
+        // Lưu role ID
+        const roleId = getRoleIdFromToken(data.accessToken)
+        if (roleId) saveRoleId(roleId)
+        
+        // Lưu thông tin đầy đủ từ token
+        const tokenInfo = extractTokenInfo(data.accessToken)
+        saveTokenInfo(tokenInfo)
       }
     }
     

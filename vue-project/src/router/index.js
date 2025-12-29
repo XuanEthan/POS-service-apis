@@ -6,6 +6,7 @@ import DashboardView from '@/views/DashboardView.vue'
 import HoaDonListView from '@/views/hoa-don/HoaDonListView.vue'
 import NguoiDungListView from '@/views/nguoi-dung/NguoiDungListView.vue'
 import ThanhToanView from '@/views/thanh-toan/ThanhToanView.vue'
+import ThongKeView from '@/views/thong-ke/ThongKeView.vue'
 import RoleListView from '@/views/role/RoleListView.vue'
 import PermissionListView from '@/views/permission/PermissionListView.vue'
 import RolePermissionListView from '@/views/role-permission/RolePermissionListView.vue'
@@ -45,6 +46,12 @@ const router = createRouter({
       meta: { title: 'Thanh toán', requiresAuth: true }
     },
     {
+      path: '/thong-ke',
+      name: 'thong-ke',
+      component: ThongKeView,
+      meta: { title: 'Thống kê', requiresAuth: true }
+    },
+    {
       path: '/role',
       name: 'role',
       component: RoleListView,
@@ -65,33 +72,34 @@ const router = createRouter({
   ],
 })
 
-// Navigation Guard - Kiểm tra đăng nhập và quyền truy cập
-router.beforeEach((to, from, next) => {
-  // Cập nhật title trang
-  document.title = to.meta.title ? `${to.meta.title} - POS System` : 'POS System'
+// // Navigation Guard - Kiểm tra đăng nhập và quyền truy cập
+// router.beforeEach((to, from, next) => {
+//   // Cập nhật title trang
+//   document.title = to.meta.title ? `${to.meta.title} - POS System` : 'POS System'
   
-  // Kiểm tra route yêu cầu đăng nhập
-  if (to.meta.requiresAuth !== false) {
-    if (!isAuthenticated()) {
-      // Chưa đăng nhập -> chuyển đến trang login
-      next({ name: 'login', query: { redirect: to.fullPath } })
-      return
-    }
+//   // Kiểm tra route yêu cầu đăng nhập
+//   if (to.meta.requiresAuth !== false) {
+//     if (!isAuthenticated()) {
+//       // Chưa đăng nhập -> chuyển đến trang login
+//       next({ name: 'login', query: { redirect: to.fullPath } })
+//       return
+//     }
     
-    // Kiểm tra quyền truy cập route (tùy chọn)
-    // if (!canAccessRoute(to.path)) {
-    //   next({ name: 'dashboard' })
-    //   return
-    // }
-  }
+//     // Kiểm tra quyền truy cập route
+//     // Nếu không có quyền -> chuyển về dashboard (ẩn chức năng thay vì hiện forbidden)
+//     if (!canAccessRoute(to.path)) {
+//       next({ name: 'dashboard' })
+//       return
+//     }
+//   }
   
-  // Nếu đã đăng nhập mà vào trang login -> chuyển về dashboard
-  if (to.name === 'login' && isAuthenticated()) {
-    next({ name: 'dashboard' })
-    return
-  }
+//   // Nếu đã đăng nhập mà vào trang login -> chuyển về dashboard
+//   if (to.name === 'login' && isAuthenticated()) {
+//     next({ name: 'dashboard' })
+//     return
+//   }
   
-  next()
-})
+//   next()
+// })
 
 export default router

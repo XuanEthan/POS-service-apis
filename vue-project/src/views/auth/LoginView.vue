@@ -56,7 +56,7 @@ function togglePassword() {
       <!-- Logo / Header -->
       <div class="login-header">
         <div class="logo">
-          <span class="logo-icon">🏪</span>
+          <i class="fas fa-cash-register logo-icon"></i>
           <span class="logo-text">POS System</span>
         </div>
         <h1>Đăng nhập</h1>
@@ -65,7 +65,7 @@ function togglePassword() {
       
       <!-- Error message -->
       <div v-if="error" class="error-alert">
-        <span class="error-icon">⚠️</span>
+        <i class="fas fa-exclamation-triangle error-icon"></i>
         <span>{{ error }}</span>
       </div>
       
@@ -74,7 +74,7 @@ function togglePassword() {
         <div class="form-group">
           <label for="username">Tên đăng nhập</label>
           <div class="input-wrapper">
-            <span class="input-icon">👤</span>
+            <i class="fas fa-user input-icon"></i>
             <input 
               type="text" 
               id="username" 
@@ -89,7 +89,7 @@ function togglePassword() {
         <div class="form-group">
           <label for="password">Mật khẩu</label>
           <div class="input-wrapper">
-            <span class="input-icon">🔒</span>
+            <i class="fas fa-lock input-icon"></i>
             <input 
               :type="showPassword ? 'text' : 'password'" 
               id="password" 
@@ -104,7 +104,7 @@ function togglePassword() {
               @click="togglePassword"
               tabindex="-1"
             >
-              {{ showPassword ? '🙈' : '👁️' }}
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </button>
           </div>
         </div>
@@ -123,13 +123,16 @@ function togglePassword() {
           :disabled="loading"
         >
           <span v-if="loading" class="loading-spinner"></span>
-          <span v-else>Đăng nhập</span>
+          <template v-else>
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Đăng nhập</span>
+          </template>
         </button>
       </form>
       
       <!-- Footer -->
       <div class="login-footer">
-        <p>© 2025 POS System - Dân Trí Soft</p>
+        <p>© 2025 POS System</p>
       </div>
     </div>
   </div>
@@ -141,85 +144,104 @@ function togglePassword() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #2c3e50;
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative background pattern */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(135deg, rgba(52, 73, 94, 0.8) 0%, rgba(44, 62, 80, 0.9) 100%);
+  pointer-events: none;
 }
 
 .login-box {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 420px;
-  padding: 40px;
+  max-width: 360px;
+  padding: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .logo-icon {
-  font-size: 40px;
+  font-size: 24px;
+  color: #3498db;
 }
 
 .logo-text {
-  font-size: 24px;
-  font-weight: 700;
-  color: #667eea;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .login-header h1 {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .login-header p {
   color: #666;
-  font-size: 14px;
+  font-size: 12px;
   margin: 0;
 }
 
 .error-alert {
-  background: #ffe6e6;
-  color: #c00;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 8px 12px;
+  border-radius: 2px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: 12px;
+  border-left: 3px solid #ef4444;
 }
 
 .error-icon {
-  font-size: 18px;
+  font-size: 12px;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-group label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #333;
 }
@@ -232,41 +254,51 @@ function togglePassword() {
 
 .input-icon {
   position: absolute;
-  left: 14px;
-  font-size: 16px;
+  left: 10px;
+  font-size: 12px;
+  color: #6b7280;
   pointer-events: none;
 }
 
 .input-wrapper input {
   width: 100%;
-  padding: 14px 14px 14px 44px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 15px;
+  padding: 8px 10px 8px 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 2px;
+  font-size: 12px;
   transition: all 0.2s;
-  background: #fafafa;
+  background: #fff;
 }
 
 .input-wrapper input:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: #3498db;
+  box-shadow: 0 0 0 1px rgba(52, 152, 219, 0.2);
 }
 
 .input-wrapper input:disabled {
-  background: #f0f0f0;
+  background: #f3f4f6;
   cursor: not-allowed;
+}
+
+.input-wrapper input::placeholder {
+  color: #9ca3af;
 }
 
 .toggle-password {
   position: absolute;
-  right: 14px;
+  right: 10px;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 12px;
+  color: #6b7280;
   padding: 0;
+  transition: color 0.2s;
+}
+
+.toggle-password:hover {
+  color: #3498db;
 }
 
 .form-options {
@@ -278,21 +310,22 @@ function togglePassword() {
 .remember-me {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 12px;
   color: #666;
   cursor: pointer;
 }
 
 .remember-me input {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   cursor: pointer;
+  accent-color: #3498db;
 }
 
 .forgot-password {
-  font-size: 14px;
-  color: #667eea;
+  font-size: 12px;
+  color: #3498db;
   text-decoration: none;
 }
 
@@ -302,24 +335,23 @@ function togglePassword() {
 
 .btn-login {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 10px;
+  background: #3498db;
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 2px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .btn-login:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  background: #2980b9;
 }
 
 .btn-login:disabled {
@@ -328,9 +360,9 @@ function togglePassword() {
 }
 
 .loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -342,25 +374,25 @@ function togglePassword() {
 
 .login-footer {
   text-align: center;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .login-footer p {
-  color: #999;
-  font-size: 12px;
+  color: #9ca3af;
+  font-size: 11px;
   margin: 0;
 }
 
 /* Responsive */
 @media (max-width: 480px) {
   .login-box {
-    padding: 30px 20px;
+    padding: 24px 20px;
   }
   
   .login-header h1 {
-    font-size: 24px;
+    font-size: 18px;
   }
 }
 </style>

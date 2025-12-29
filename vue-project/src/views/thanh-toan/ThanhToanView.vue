@@ -44,8 +44,8 @@ function formatPrice(price) {
     <aside class="left-panel">
       <div class="lp-header">
         <div class="lp-info-row">
-          <span style="font-size: 16px; font-weight: bold">SV02 - Sân vườn</span>
-          <span>Giờ vào: 05/07/2019 12:18</span>
+          <span class="table-name">SV02 - Sân vườn</span>
+          <span class="time-in">Giờ vào: 05/07/2019 12:18</span>
         </div>
       </div>
 
@@ -87,54 +87,45 @@ function formatPrice(price) {
             <span>Tổng tiền</span>
             <input type="text" class="summary-input grand-total" v-model="grandTotal" />
           </div>
-          <div class="summary-row">
-            <span>Phí phục vụ</span>
-            <input type="text" class="summary-input" v-model="serviceFee" />
-          </div>
-          <div class="summary-row">
-            <span>Giảm giá</span>
-            <input type="text" class="summary-input" v-model="discount" />
-          </div>
-          <div class="summary-row">
-            <span>Thuế</span>
-            <input type="text" class="summary-input" v-model="tax" />
-          </div>
-
-          <div class="pay-row">
+          <!-- <div class="pay-row">
             <span style="font-weight: bold">Phải trả:</span>
             <span class="lp-total-display">{{ mustPay }}</span>
           </div>
           <div class="pay-row">
             <span>Khách trả:</span>
             <input type="text" class="summary-input khach-tra-input" v-model="customerPay" />
-          </div>
-        </div>
+          </div> -->
+        </div> 
         <div class="actions-row">
           <div class="col">
             <button class="action-btn btn-info">
-              <span class="btn-icon">ℹ️</span><span>Mở rộng</span>
+              <i class="fas fa-expand"></i><span>Mở rộng</span>
             </button>
             <button class="action-btn btn-green">
-              <span class="btn-icon">👥</span><span>Ghép bàn</span>
+              <i class="fas fa-object-group"></i><span>Ghép bàn</span>
             </button>
           </div>
           <div class="col">
             <button class="action-btn btn-purple">
-              <span class="btn-icon">🔄</span><span>Chuyển bàn</span>
+              <i class="fas fa-exchange-alt"></i><span>Chuyển bàn</span>
             </button>
             <button class="action-btn btn-blue">
-              <span class="btn-icon">💾</span><span>F5 Lưu h.đơn</span>
+              <i class="fas fa-save"></i><span>F5 Lưu h.đơn</span>
             </button>
           </div>
           <div class="col">
             <button class="action-btn btn-pink">
-              <span class="btn-icon">🖨️</span><span>F4 In h.đơn</span>
+              <i class="fas fa-print"></i><span>F4 In h.đơn</span>
             </button>
             <button class="action-btn btn-orange">
-              <span class="btn-icon">🍲</span><span>F3 In bếp/bar</span>
+              <i class="fas fa-utensils"></i><span>F3 In bếp/bar</span>
             </button>
           </div>
-          <button class="action-btn btn-pay">Thanh toán</button>
+          <div class="col col-pay">
+            <button class="action-btn btn-pay">
+              <i class="fas fa-money-bill-wave"></i><span>Thanh toán</span>
+            </button>
+          </div>
         </div>
       </div>
     </aside>
@@ -172,30 +163,44 @@ function formatPrice(price) {
 .payment-container {
   display: flex;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   font-family: Arial, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
+  overflow: hidden;
 }
 
 /* Left Panel */
 .left-panel {
-  width: 45%;
+  width: 50%;
   background: #f5f5f5;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #ddd;
+  flex-shrink: 0;
 }
 
 .lp-header {
-  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+  background: #3498db;
   color: white;
-  padding: 14px 15px;
+  padding: 8px 10px;
+  flex-shrink: 0;
 }
 
 .lp-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+}
+
+.lp-info-row .table-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lp-info-row .time-in {
+  font-size: 10px;
+  opacity: 0.9;
 }
 
 .order-table-container {
@@ -211,17 +216,19 @@ function formatPrice(price) {
 
 .order-table-container thead th {
   background: #e0e0e0;
-  padding: 8px 5px;
+  padding: 6px 4px;
   text-align: left;
   font-weight: 600;
+  font-size: 11px;
   border-bottom: 1px solid #ccc;
   position: sticky;
   top: 0;
 }
 
 .order-table-container tbody td {
-  padding: 8px 5px;
+  padding: 6px 4px;
   border-bottom: 1px solid #eee;
+  font-size: 11px;
 }
 
 .order-table-container tbody tr:hover {
@@ -245,25 +252,28 @@ function formatPrice(price) {
 .lp-footer {
   background: #fafafa;
   border-top: 1px solid #ddd;
+  flex-shrink: 0;
 }
 
 .payment-summary {
-  padding: 10px 15px;
+  padding: 6px 10px;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
 }
 
 .summary-input {
-  width: 120px;
+  width: 90px;
   text-align: right;
-  padding: 5px 8px;
+  padding: 3px 5px;
   border: 1px solid #ccc;
-  border-radius: 3px;
+  border-radius: 2px;
+  font-size: 11px;
 }
 
 .summary-input.grand-total {
@@ -275,51 +285,61 @@ function formatPrice(price) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  padding: 5px 0;
+  margin-bottom: 4px;
+  padding: 2px 0;
+  font-size: 11px;
 }
 
 .lp-total-display {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: bold;
   color: #d32f2f;
 }
 
 .khach-tra-input {
-  width: 120px;
+  width: 90px;
 }
 
 /* Actions */
 .actions-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding: 10px 15px;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 4px;
+  padding: 6px 8px;
   background: #eee;
 }
 
 .actions-row .col {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+}
+
+.actions-row .col-pay {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 10px;
+  gap: 3px;
+  padding: 5px 4px;
   border: none;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 500;
   color: white;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.btn-icon {
-  font-size: 14px;
+.action-btn i {
+  font-size: 10px;
+  flex-shrink: 0;
 }
 
 .btn-info { background: #17a2b8; }
@@ -330,14 +350,25 @@ function formatPrice(price) {
 .btn-orange { background: #f39c12; }
 
 .btn-pay {
-  grid-column: 1 / -1;
   background: #27ae60;
-  font-size: 16px;
-  padding: 15px;
+  font-size: 12px;
+  padding: 8px 12px;
+  font-weight: 600;
+  flex: 1;
+  flex-direction: column;
 }
 
 .btn-pay:hover {
   background: #219a52;
+}
+
+/* Right Panel */
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f9f9f9;
+  min-width: 0;
 }
 
 /* Right Panel */
@@ -351,18 +382,19 @@ function formatPrice(price) {
 .rp-top-bar {
   display: flex;
   align-items: center;
-  background: linear-gradient(90deg, #2c3e50 0%, #1a252f 100%);
-  padding: 10px 15px;
-  gap: 10px;
+  background: #2c3e50;
+  padding: 8px 12px;
+  gap: 8px;
 }
 
 .tab-btn {
-  padding: 10px 20px;
+  padding: 6px 12px;
   background: #34495e;
   color: white;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 11px;
   transition: background 0.2s;
 }
 
@@ -380,15 +412,15 @@ function formatPrice(price) {
 
 .search-box {
   flex: 1;
-  margin-left: 10px;
+  margin-left: 8px;
 }
 
 .search-box input {
   width: 100%;
-  padding: 10px 15px;
+  padding: 6px 10px;
   border: none;
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: 2px;
+  font-size: 11px;
 }
 
 /* Product Grid */
@@ -396,8 +428,8 @@ function formatPrice(price) {
   flex: 1;
   display: flex;
   align-items: stretch;
-  padding: 15px;
-  gap: 10px;
+  padding: 10px;
+  gap: 8px;
   overflow: hidden;
 }
 
@@ -405,12 +437,12 @@ function formatPrice(price) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  font-size: 24px;
+  width: 24px;
+  font-size: 18px;
   color: #757575;
   cursor: pointer;
   background: #e0e0e0;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .nav-arrow:hover {
@@ -420,59 +452,58 @@ function formatPrice(price) {
 .grid-wrapper {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
   overflow-y: auto;
   align-content: start;
 }
 
 .product-card {
   background: white;
-  border-radius: 6px;
-  padding: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 2px;
+  padding: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: box-shadow 0.2s;
 }
 
 .product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
 }
 
 .product-img {
   width: 100%;
-  height: 70px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .product-img img {
   max-width: 100%;
   max-height: 100%;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .prod-name {
   font-weight: 600;
-  font-size: 12px;
-  margin-bottom: 4px;
+  font-size: 10px;
+  margin-bottom: 2px;
   color: #333;
 }
 
 .prod-unit {
-  font-size: 11px;
+  font-size: 9px;
   color: #757575;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .prod-price {
   font-weight: bold;
   color: #d32f2f;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 /* Responsive */

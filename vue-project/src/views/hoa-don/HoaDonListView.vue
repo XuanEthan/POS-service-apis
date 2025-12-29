@@ -59,11 +59,11 @@ function handleCheckAll() {
     <!-- Toolbar -->
     <div class="page-toolbar">
       <button class="btn btn-primary"><span>+</span> Thêm mới</button>
-      <button class="btn btn-danger">Xóa vĩnh viễn</button>
+      <!-- <button class="btn btn-danger">Xóa vĩnh viễn</button>
       <button class="btn btn-warning">Xóa tạm</button>
       <button class="btn btn-info">Khôi phục</button>
       <button class="btn btn-warning">Xuất danh sách</button>
-      <button class="btn btn-success">Import từ file Excel</button>
+      <button class="btn btn-success">Import từ file Excel</button> -->
     </div>
 
     <!-- Filters -->
@@ -118,12 +118,12 @@ function handleCheckAll() {
             <td><span :class="getBadgeClass(invoice.status)">{{ getBadgeText(invoice.status) }}</span></td>
             <td class="col-action">
               <div class="dropdown">
-                <button class="row-action-btn">⚙</button>
+                <button class="row-action-btn"><i class="fas fa-cog"></i></button>
                 <div class="dropdown-menu">
-                  <a class="dropdown-item">✏️ Sửa</a>
-                  <a class="dropdown-item">👁️ Xem chi tiết</a>
+                  <a class="dropdown-item"><i class="fas fa-edit"></i> Sửa</a>
+                  <a class="dropdown-item"><i class="fas fa-eye"></i> Xem chi tiết</a>
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item">🗑️ Xóa</a>
+                  <a class="dropdown-item"><i class="fas fa-trash"></i> Xóa</a>
                 </div>
               </div>
             </td>

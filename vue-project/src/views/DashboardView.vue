@@ -1,5 +1,41 @@
 <script setup>
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { getUserPermissions, isAdmin, ROUTE_PERMISSIONS } from '@/utils/auth'
+
+// Kiểm tra quyền admin
+const userIsAdmin = computed(() => isAdmin())
+
+// Lấy permissions của user
+const userPermissions = computed(() => getUserPermissions())
+
+// Hàm kiểm tra quyền truy cập route
+function checkRouteAccess(routePath) {
+  if (userIsAdmin.value) return true
+  
+  const requiredPermissions = ROUTE_PERMISSIONS[routePath]
+  if (!requiredPermissions) return true
+  
+  return requiredPermissions.some(permId => userPermissions.value.includes(permId))
+}
+
+// Kiểm tra quyền cho từng quick action
+const canAccessThanhToan = computed(() => checkRouteAccess('/thanh-toan'))
+const canAccessHoaDon = computed(() => checkRouteAccess('/hoa-don'))
+const canAccessNguoiDung = computed(() => checkRouteAccess('/nguoi-dung'))
+const canAccessRole = computed(() => checkRouteAccess('/role'))
+const canAccessPermission = computed(() => checkRouteAccess('/permission'))
+const canAccessRolePermission = computed(() => checkRouteAccess('/role-permission'))
+
+// Kiểm tra có quick action nào để hiển thị không
+const hasAnyQuickAction = computed(() => 
+  canAccessThanhToan.value || 
+  canAccessHoaDon.value || 
+  canAccessNguoiDung.value || 
+  canAccessRole.value || 
+  canAccessPermission.value || 
+  canAccessRolePermission.value
+)
 </script>
 
 <template>
@@ -7,7 +43,7 @@ import { RouterLink } from 'vue-router'
     <!-- Page Header -->
     <div class="page-header">
       <h1 class="page-title">TỔNG QUAN</h1>
-      <span class="page-subtitle">Chào mừng bạn đến với hệ thống POS - Dân Trí Soft</span>
+      <span class="page-subtitle">Chào mừng bạn đến với hệ thống POS</span>
     </div>
 
     <!-- Content -->
@@ -15,7 +51,7 @@ import { RouterLink } from 'vue-router'
       <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card stat-blue">
-          <div class="stat-icon">🧾</div>
+          <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
           <div class="stat-info">
             <div class="stat-value">156</div>
             <div class="stat-label">Hóa đơn hôm nay</div>
@@ -23,7 +59,7 @@ import { RouterLink } from 'vue-router'
         </div>
 
         <div class="stat-card stat-green">
-          <div class="stat-icon">💰</div>
+          <div class="stat-icon"><i class="fas fa-coins"></i></div>
           <div class="stat-info">
             <div class="stat-value">12,500,000 ₫</div>
             <div class="stat-label">Doanh thu hôm nay</div>
@@ -31,7 +67,7 @@ import { RouterLink } from 'vue-router'
         </div>
 
         <div class="stat-card stat-orange">
-          <div class="stat-icon">👥</div>
+          <div class="stat-icon"><i class="fas fa-users"></i></div>
           <div class="stat-info">
             <div class="stat-value">48</div>
             <div class="stat-label">Khách hàng</div>
@@ -39,7 +75,7 @@ import { RouterLink } from 'vue-router'
         </div>
 
         <div class="stat-card stat-purple">
-          <div class="stat-icon">📦</div>
+          <div class="stat-icon"><i class="fas fa-box"></i></div>
           <div class="stat-info">
             <div class="stat-value">234</div>
             <div class="stat-label">Sản phẩm đã bán</div>
@@ -48,31 +84,31 @@ import { RouterLink } from 'vue-router'
       </div>
 
       <!-- Quick Actions -->
-      <div class="quick-actions-section">
+      <div class="quick-actions-section" v-if="hasAnyQuickAction">
         <h2 class="section-title">Truy cập nhanh</h2>
         <div class="actions-grid">
-          <RouterLink to="/thanh-toan" class="action-card action-primary">
-            <span class="action-icon">💳</span>
-            <span class="action-text">Thanh toán</span>
+          <RouterLink v-if="canAccessThanhToan" to="/thanh-toan" class="action-card action-primary">
+            <i class="fas fa-credit-card action-icon"></i>
+            <span class="action-text">Order/Tính tiền</span>
           </RouterLink>
-          <RouterLink to="/hoa-don" class="action-card action-info">
-            <span class="action-icon">🧾</span>
+          <RouterLink v-if="canAccessHoaDon" to="/hoa-don" class="action-card action-info">
+            <i class="fas fa-file-invoice action-icon"></i>
             <span class="action-text">Hóa đơn</span>
           </RouterLink>
-          <RouterLink to="/nguoi-dung" class="action-card action-success">
-            <span class="action-icon">👤</span>
+          <RouterLink v-if="canAccessNguoiDung" to="/nguoi-dung" class="action-card action-success">
+            <i class="fas fa-user action-icon"></i>
             <span class="action-text">Người dùng</span>
           </RouterLink>
-          <RouterLink to="/role" class="action-card action-warning">
-            <span class="action-icon">🎭</span>
+          <RouterLink v-if="canAccessRole" to="/role" class="action-card action-warning">
+            <i class="fas fa-user-tag action-icon"></i>
             <span class="action-text">Vai trò</span>
           </RouterLink>
-          <RouterLink to="/permission" class="action-card action-purple">
-            <span class="action-icon">🔑</span>
+          <RouterLink v-if="canAccessPermission" to="/permission" class="action-card action-purple">
+            <i class="fas fa-key action-icon"></i>
             <span class="action-text">Quyền</span>
           </RouterLink>
-          <RouterLink to="/role-permission" class="action-card action-secondary">
-            <span class="action-icon">🔐</span>
+          <RouterLink v-if="canAccessRolePermission" to="/role-permission" class="action-card action-secondary">
+            <i class="fas fa-shield-alt action-icon"></i>
             <span class="action-text">Phân quyền</span>
           </RouterLink>
         </div>
@@ -83,32 +119,31 @@ import { RouterLink } from 'vue-router'
 
 <style scoped>
 .dashboard-content {
-  padding: 24px;
+  padding: 16px;
 }
 
 /* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .stat-card {
   background: white;
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 2px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-left: 4px solid transparent;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s;
+  border-left: 3px solid transparent;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .stat-blue { border-left-color: #3498db; }
@@ -117,58 +152,58 @@ import { RouterLink } from 'vue-router'
 .stat-purple { border-left-color: #9b59b6; }
 
 .stat-icon {
-  font-size: 32px;
-  width: 56px;
-  height: 56px;
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 2px;
   background: #f8f9fa;
 }
 
-.stat-blue .stat-icon { background: #ebf5fb; }
-.stat-green .stat-icon { background: #e8f6ef; }
-.stat-orange .stat-icon { background: #fef5e7; }
-.stat-purple .stat-icon { background: #f5eef8; }
+.stat-blue .stat-icon { background: #ebf5fb; color: #3498db; }
+.stat-green .stat-icon { background: #e8f6ef; color: #27ae60; }
+.stat-orange .stat-icon { background: #fef5e7; color: #f39c12; }
+.stat-purple .stat-icon { background: #f5eef8; color: #9b59b6; }
 
 .stat-info {
   flex: 1;
 }
 
 .stat-value {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 11px;
   color: #7f8c8d;
 }
 
 /* Quick Actions */
 .quick-actions-section {
   background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 2px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #e9ecef;
 }
 
 .actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
 }
 
 .action-card {
@@ -176,47 +211,46 @@ import { RouterLink } from 'vue-router'
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  border-radius: 8px;
+  padding: 12px 8px;
+  border-radius: 2px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: opacity 0.2s;
   text-decoration: none;
   color: white;
 }
 
 .action-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.9;
 }
 
-.action-primary { background: linear-gradient(135deg, #3498db, #2980b9); }
-.action-info { background: linear-gradient(135deg, #17a2b8, #138496); }
-.action-success { background: linear-gradient(135deg, #27ae60, #219a52); }
-.action-warning { background: linear-gradient(135deg, #f39c12, #d68910); }
-.action-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-.action-secondary { background: linear-gradient(135deg, #6c757d, #5a6268); }
+.action-primary { background: #3498db; }
+.action-info { background: #17a2b8; }
+.action-success { background: #27ae60; }
+.action-warning { background: #f39c12; }
+.action-purple { background: #9b59b6; }
+.action-secondary { background: #6c757d; }
 
 .action-icon {
-  font-size: 32px;
-  margin-bottom: 12px;
+  font-size: 18px;
+  margin-bottom: 6px;
 }
 
 .action-text {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
   .dashboard-content {
-    padding: 16px;
+    padding: 12px;
   }
   
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
   
   .actions-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 </style>

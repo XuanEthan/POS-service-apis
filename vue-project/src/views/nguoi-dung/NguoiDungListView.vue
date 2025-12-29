@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getUsers, deleteUser } from '@/services/userService'
+import { getUsers, deleteUser, createUser, updateUser } from '@/services/userService'
 import { getRoles } from '@/services/roleService'
+import UserModal from '@/components/UserModal.vue'
+import { canDoAction } from '@/utils/auth'
 
 const filterRole = ref('')
 const filterKeyword = ref('')
@@ -12,6 +14,17 @@ const error = ref('')
 
 const users = ref([])
 const roles = ref([])
+
+// Modal state
+const showModal = ref(false)
+const modalMode = ref('create') // 'create', 'edit', 'view'
+const selectedUser = ref({})
+
+// Kiểm tra quyền cho các action
+const canAdd = computed(() => canDoAction('user', 'add'))
+const canEdit = computed(() => canDoAction('user', 'edit'))
+const canView = computed(() => canDoAction('user', 'view'))
+const canDelete = computed(() => canDoAction('user', 'delete'))
 
 // Fetch users từ API
 async function fetchUsers() {
@@ -43,14 +56,67 @@ async function fetchRoles() {
   }
 }
 
-// Xóa user
+// Mở modal thêm mới
+function openCreateModal() {
+  selectedUser.value = {}
+  modalMode.value = 'create'
+  showModal.value = true
+}
+
+// Mở modal sửa
+function openEditModal(user) {
+  selectedUser.value = { ...user }
+  modalMode.value = 'edit'
+  showModal.value = true
+}
+
+// Mở modal xem chi tiết
+function openViewModal(user) {
+  selectedUser.value = { ...user }
+  modalMode.value = 'view'
+  showModal.value = true
+}
+
+// Đóng modal
+function closeModal() {
+  showModal.value = false
+  selectedUser.value = {}
+}
+
+// Lưu user (thêm mới hoặc cập nhật)
+async function handleSaveUser(userData) {
+  try {
+    let response
+    if (modalMode.value === 'create') {
+      response = await createUser(userData)
+    } else {
+      response = await updateUser(userData.userId, userData)
+    }
+    
+    if (response.isSuccess) {
+      alert(modalMode.value === 'create' ? 'Thêm mới thành công!' : 'Cập nhật thành công!')
+      closeModal()
+      await fetchUsers()
+    } else {
+      alert(response.message || 'Thao tác thất bại!')
+    }
+  } catch (e) {
+    alert('Lỗi kết nối server')
+  }
+}
+
+// Xóa user - User thường không có ràng buộc nên có thể xóa trực tiếp
 async function handleDelete(userId) {
-  if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return
+  // Tìm thông tin user để hiển thị
+  const user = users.value.find(u => u.userId === userId)
+  const userName = user ? user.userName : 'người dùng này'
+  
+  if (!confirm(`Bạn có chắc muốn xóa người dùng "${userName}"?\n\nHành động này không thể hoàn tác!`)) return
   
   try {
     const response = await deleteUser(userId)
     if (response.isSuccess) {
-      alert('Xóa thành công!')
+      alert('✅ Xóa thành công!')
       await fetchUsers()
     } else {
       alert(response.message || 'Xóa thất bại!')
@@ -63,7 +129,7 @@ async function handleDelete(userId) {
 // Helper: Lấy tên role từ roleId
 function getRoleName(roleId) {
   const role = roles.value.find(r => r.roleId === roleId)
-  return role ? role.title : (roleId || 'N/A')
+  return role ? role.title : 'N/A'
 }
 
 // Lọc users theo model User: UserId, UserName, Password, RoleId, RoleCode
@@ -103,27 +169,22 @@ onMounted(() => {
 
     <!-- Toolbar -->
     <div class="page-toolbar">
-      <button class="btn btn-primary"><span>+</span> Thêm mới</button>
-      <button class="btn btn-danger">Xóa vĩnh viễn</button>
-      <button class="btn btn-warning">Xóa tạm</button>
-      <button class="btn btn-info">Khôi phục</button>
-      <button class="btn btn-warning">Xuất danh sách</button>
-      <button class="btn btn-success">Import từ file Excel</button>
+      <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Thêm mới</button>
       <button class="btn btn-secondary" @click="fetchUsers">🔄 Tải lại</button>
     </div>
 
     <!-- Filters -->
-    <div class="page-filters">
-      <select v-model="filterRole" class="form-control">
-        <option value="">-- Chọn Vai trò --</option>
+    <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+      <select v-model="filterRole" class="form-control" style="flex: 0 0 160px;">
+        <option value="">-- Vai trò --</option>
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
           {{ role.title }}
         </option>
       </select>
-      <div class="input-group" style="grid-column: span 2;">
-        <input v-model="filterKeyword" class="form-control" placeholder="Tìm kiếm theo tên đăng nhập hoặc mã vai trò..." @keyup.enter="handleSearch" />
-        <button class="btn btn-primary" @click="handleSearch">Tìm kiếm</button>
-      </div>
+      <input v-model="filterKeyword" class="form-control" style="flex: 1;" placeholder="Tìm theo tên đăng nhập, mã vai trò..." @keyup.enter="handleSearch" />
+      <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
+        <i class="fas fa-search"></i> Tìm kiếm
+      </button>
     </div>
 
     <!-- Loading / Error -->
@@ -143,9 +204,9 @@ onMounted(() => {
             <tr>
               <th class="col-check"><input type="checkbox" v-model="checkAll" @change="handleCheckAll" /></th>
               <th class="col-stt">STT</th>
-              <th>Tên đăng nhập (UserName)</th>
+              <th>Tên đăng nhập</th>
               <th>Mật khẩu</th>
-              <th>Vai trò (RoleCode)</th>
+              <th>Vai trò</th>
               <th class="col-action">Thao tác</th>
             </tr>
           </thead>
@@ -160,13 +221,13 @@ onMounted(() => {
               <td>********</td>
               <td><span class="badge badge-info">{{ getRoleName(user.roleId) }}</span></td>
               <td class="col-action">
-                <div class="dropdown">
+                <div class="dropdown" v-if="canEdit || canView || canDelete">
                   <button class="row-action-btn">⚙</button>
                   <div class="dropdown-menu">
-                    <a class="dropdown-item">✏️ Sửa</a>
-                    <a class="dropdown-item">👁️ Xem chi tiết</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" @click="handleDelete(user.userId)">🗑️ Xóa</a>
+                    <a v-if="canEdit" class="dropdown-item" @click="openEditModal(user)">✏️ Sửa</a>
+                    <a v-if="canView" class="dropdown-item" @click="openViewModal(user)">👁️ Xem chi tiết</a>
+                    <div v-if="canDelete && (canEdit || canView)" class="dropdown-divider"></div>
+                    <a v-if="canDelete" class="dropdown-item" @click="handleDelete(user.userId)">🗑️ Xóa</a>
                   </div>
                 </div>
               </td>
@@ -195,6 +256,16 @@ onMounted(() => {
         <button class="pg-btn">&gt;|</button>
       </div>
     </div>
+
+    <!-- User Modal -->
+    <UserModal
+      :visible="showModal"
+      :mode="modalMode"
+      :user="selectedUser"
+      :roles="roles"
+      @close="closeModal"
+      @save="handleSaveUser"
+    />
   </div>
 </template>
 
