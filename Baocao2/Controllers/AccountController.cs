@@ -16,16 +16,16 @@ namespace Baocao2.Controllers
         {
             _accountService = accountService;
         }
-        [HttpPost("/login")]
-        public LoginModel login(string username, string password, string? rememberMe)
+        [HttpPost("login")]
+        public LoginModel login([FromBody] User_Login user_Login)
         {
-            return _accountService.Login(username, password, rememberMe);
+            return _accountService.Login(user_Login.userName , user_Login.pwd , user_Login.rememberMe);
         }
 
-        [HttpPost("/refreshtoken")]
-        public LoginModel RefreshToken(string accessToken , string refreshToken)
+        [HttpPost("refreshtoken")]
+        public LoginModel RefreshToken([FromBody] RefreshToken_Request req)
         {
-            return _accountService.RefreshToken(accessToken , refreshToken);
+            return _accountService.RefreshToken(req.accessToken , req.refreshToken);
         }
     }
 }

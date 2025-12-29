@@ -19,6 +19,8 @@ namespace Baocao2.Extensions
                 context.Result = new UnauthorizedResult();
                 return;
             }
+            var isAdmin = user.Claims.Any(c => c.Type=="roleId" && c.Value == "9ff33dec-0671-40d7-aba9-6c8060b7f0b2");
+            if (isAdmin) return;
 
             var has = user.Claims
             .Any(c => c.Type == "permission" && c.Value == _permission);
