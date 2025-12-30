@@ -12,9 +12,8 @@
     {
         public static List<RolePermission> List = new List<RolePermission>()
         {
-            new RolePermission{RolePermissionId = Guid.NewGuid() , RoleId = Guid.Parse("9ff33dec-0671-40d7-aba9-6c8060b7f0b2") , PermissionId=Guid.Parse("30c474e1-38e9-489a-a5b7-d322f0e09c57")},
-            new RolePermission{RolePermissionId = Guid.NewGuid() , RoleId = Guid.Parse("9ff33dec-0671-40d7-aba9-6c8060b7f0b2") , PermissionId=Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139152")},
-            new RolePermission{RolePermissionId = Guid.NewGuid() , RoleId = Guid.Parse("7febfdd7-1fa9-4312-80b5-c993810479db") , PermissionId=Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139152")},
+            new RolePermission{RolePermissionId = Guid.NewGuid() , RoleId = Guid.Parse("9ff33dec-0671-40d7-aba9-6c8060b7f0b2") , PermissionId=Guid.Empty},
+            new RolePermission{RolePermissionId = Guid.NewGuid() , RoleId = Guid.Parse("7febfdd7-1fa9-4312-80b5-c993810479db") , PermissionId=Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e255ec")},
         };
     }
     public partial class PERMISSION_FIX

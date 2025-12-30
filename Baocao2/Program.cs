@@ -57,7 +57,7 @@ var tokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidati
     ValidateAudience = false,
     ValidateLifetime = true,
     ValidateIssuerSigningKey = true,
-    ClockSkew = TimeSpan.Zero,
+    ClockSkew = TimeSpan.FromSeconds(10),
     IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(secretKey),
 };
 
@@ -80,7 +80,15 @@ builder.Services.AddTransient<PermissionService>();
 builder.Services.AddTransient<RoleService>();
 builder.Services.AddTransient<UserService>();
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -90,9 +98,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

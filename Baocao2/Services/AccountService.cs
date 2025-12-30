@@ -10,15 +10,13 @@ namespace Baocao2.Services
     {
         private readonly IConfiguration _configuration;
         private readonly TokenValidationParameters _tokenValidationParameters;
-        private RolePermissionService _rolePermissonService;
-        public AccountService(IConfiguration configuration, TokenValidationParameters tokenValidationParameters, RolePermissionService rolePermissonService)
+        public AccountService(IConfiguration configuration, TokenValidationParameters tokenValidationParameters)
         {
             _configuration = configuration;
             _tokenValidationParameters = tokenValidationParameters;
-            _rolePermissonService = rolePermissonService;
         }
 
-        public LoginModel Login(string username, string password, string? rememberMe)
+        public LoginModel Login(string username, string password, bool? rememberMe)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
@@ -29,7 +27,7 @@ namespace Baocao2.Services
             {
                 return new LoginModel(false, ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct, ResultModel.BuildMessage(ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct), Guid.Empty, null, "", "");
             }
-            if (found.Password != password)
+            if (found.Password != password) // CHƯA HASH
             {
                 return new LoginModel(false, ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct, ResultModel.BuildMessage(ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct), Guid.Empty, null, "", "");
             }
@@ -38,16 +36,18 @@ namespace Baocao2.Services
         private LoginModel generateJwtTokens(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var perList = _rolePermissonService.GetListQuery(null).ToList();
+            //var perList = _rolePermissonService.GetListQuery(user.RoleId.ToString()).ToList();
+            var perList = RolePermissions.List.Where(rp => rp.RoleId == user.RoleId).ToList();
+            var role = Roles.roles.FirstOrDefault(r => r.RoleId == user.RoleId);
             try
             {
                 var secretKey = Encoding.UTF8.GetBytes(_configuration["JWTSettings:Secret"]);
-
                 var claims = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier , user.UserId.ToString()),
                     new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role,user.RoleCode),
+                    new Claim(ClaimTypes.Role, role.Code),
+                    new Claim("isAdmin" , role.Code == "QUANTRI" ? "true" : "false"),
                     new Claim("roleId" , user.RoleId.ToString()),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 });
@@ -60,7 +60,7 @@ namespace Baocao2.Services
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = claims,
-                    Expires = DateTime.UtcNow.AddMinutes(1),
+                    Expires = DateTime.UtcNow.AddMinutes(1), // 1 phút
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature)
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -71,7 +71,7 @@ namespace Baocao2.Services
                     token = Guid.NewGuid().ToString(),
                     jwtId = token.Id,
                     CreateTime = DateTime.UtcNow,
-                    ExpiryDate = DateTime.UtcNow.AddMinutes(4)
+                    ExpiryDate = DateTime.UtcNow.AddMinutes(3) // 4 phút
                 };
 
                 RefreshTokens.refreshTokens.Add(refrestToken);
@@ -79,7 +79,7 @@ namespace Baocao2.Services
             }
             catch (Exception ex)
             {
-                return new LoginModel(true, ResultModel.ResultCode.Ok, "Đăng nhập không thành công", Guid.Empty, null, string.Empty, string.Empty);
+                return new LoginModel(false, ResultModel.ResultCode.Ok, "Đăng nhập không thành công", Guid.Empty, null, string.Empty, string.Empty);
             }
         }
         public LoginModel RefreshToken(string token, string refreshToken)
@@ -92,33 +92,40 @@ namespace Baocao2.Services
             var validatedToken = GetPrincipalFromToken(token);
             if (validatedToken == null)
             {
-                return null;
+                return new LoginModel(false, ResultModel.ResultCode.NotOK, "Token không hợp lệ", Guid.Empty, null, null, null);
             }
+
             var expDateUnix = long.Parse(validatedToken.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
             var expDateTimeUtc = DateTimeOffset.FromUnixTimeSeconds(expDateUnix).UtcDateTime;
             if (expDateTimeUtc > DateTime.UtcNow)
             {
-                return null;
+                return new LoginModel(false, ResultModel.ResultCode.NotOK, "Token chưa hết hạn", Guid.Empty, null, null, null);
             }
+
             var jti = validatedToken.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
-            var storedRefreshToken = RefreshTokens.refreshTokens.FirstOrDefault(x => x.token == refreshToken); // tìm rf token trong db
+            var storedRefreshToken = RefreshTokens.refreshTokens.FirstOrDefault(x => x.token == refreshToken);
             if (storedRefreshToken == null)
             {
-                return null;
+                return new LoginModel(false, ResultModel.ResultCode.Does_Not_Exists, "Refresh token không tồn tại", Guid.Empty, null, null, null);
             }
-            if (DateTime.UtcNow > storedRefreshToken.ExpiryDate) // kt rf token hết hạn
+
+            if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
             {
-                return null;
+                return new LoginModel(false, ResultModel.ResultCode.NotOK, "Refresh token đã hết hạn", Guid.Empty, null, null, null);
             }
+
             if (storedRefreshToken.Used == true)
             {
-                return null;
+                //do some thing ...
+                return new LoginModel(false, ResultModel.ResultCode.NotOK, "Refresh token đã được sử dụng", Guid.Empty, null, null, null);
+
             }
 
             if (storedRefreshToken.jwtId != jti)
             {
-                return null;
+                return new LoginModel(false, ResultModel.ResultCode.NotOK, "Token không khớp với refresh token", Guid.Empty, null, null, null);
             }
+
             storedRefreshToken.Used = true;
             foreach (var rt in RefreshTokens.refreshTokens)
             {
@@ -127,26 +134,33 @@ namespace Baocao2.Services
                     rt.Used = true;
                 }
             }
+
             var userId = validatedToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            var found = Users.UserList.FirstOrDefault(u => u.UserId.Equals(userId));
+            var found = Users.UserList.FirstOrDefault(u => u.UserId.ToString() == userId);
+
+            if (found == null)
+            {
+                return new LoginModel(false, ResultModel.ResultCode.Acc_Does_Not_Exists, "Người dùng không tồn tại", Guid.Empty, null, null, null);
+            }
+
             return generateJwtTokens(found);
         }
 
-        private ClaimsPrincipal GetPrincipalFromToken(string token)
+        private ClaimsPrincipal? GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             try
             {
                 var tokenValidParameters = _tokenValidationParameters.Clone();
                 tokenValidParameters.ValidateLifetime = false;
-                var principal = tokenHandler.ValidateToken(token, tokenValidParameters, out var validatedToken);
-                if (!(validatedToken is JwtSecurityToken jwtSecurityToken &&
+                var principal = tokenHandler.ValidateToken(token, tokenValidParameters, out var validatedToken); //validate token ...
+                if (!(validatedToken is JwtSecurityToken jwtSecurityToken && // cú pháp nhanh kt tên thuật tóan
                     jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     return null;
                 }
                 return principal;
-            }
+            } // chả về ClaimsPrincipal chứa danh tínhs (mặc định là first)
             catch
             {
                 return null;
