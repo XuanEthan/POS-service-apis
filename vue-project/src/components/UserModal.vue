@@ -112,9 +112,7 @@ function validateForm() {
     }
   }
   
-  if (!formData.value.roleId) {
-    errors.value.roleId = 'Vui lòng chọn vai trò'
-  }
+  // Vai trò không bắt buộc - người dùng có thể chọn sau
   
   return Object.keys(errors.value).length === 0
 }
@@ -130,7 +128,7 @@ function handleSave() {
     // Use EMPTY_GUID if roleId is not selected
     roleId: formData.value.roleId || EMPTY_GUID
   }
-  
+  console.log('Saving user data:', data)
   // Nếu đang edit và password trống, gửi null để backend biết không thay đổi
   if (props.mode === 'edit' && !data.password) {
     data.password = null
@@ -196,14 +194,13 @@ function handleClose() {
           </div>
 
           <div class="form-group">
-            <label class="form-label">Vai trò <span class="required">*</span></label>
+            <label class="form-label">Vai trò <span class="hint">(có thể chọn sau)</span></label>
             <select 
               v-model="formData.roleId" 
               class="form-control"
-              :class="{ 'is-invalid': errors.roleId }"
               :disabled="isReadonly"
             >
-              <option value="">-- Chọn vai trò --</option>
+              <option value="">-- Chưa chọn --</option>
               <option 
                 v-for="role in roles" 
                 :key="role.roleId" 
@@ -212,7 +209,6 @@ function handleClose() {
                 {{ role.title }} ({{ role.code }})
               </option>
             </select>
-            <span v-if="errors.roleId" class="error-text">{{ errors.roleId }}</span>
           </div>
 
           <div class="form-group" v-if="isReadonly && formData.roleCode">

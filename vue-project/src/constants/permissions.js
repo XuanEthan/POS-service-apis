@@ -35,8 +35,8 @@ export const PERMISSIONS = {
   ROLEPERMISSION_VIEW: "9fe142e5-c1c9-4889-baab-f7d6c0ad50c4",
   ROLEPERMISSION_DELETE: "833847c4-b54a-4f67-b6ce-39f7cd1be35b",
 
-  // Thanh toán
-  THANHTOAN: "ad5126b2-a617-400b-868f-4ffda4e255ec",
+  // Order/Thuchi
+  ORDER_THUCHI: "ad5126b2-a617-400b-868f-4ffda4e255ec",
 
   // Thống kê
   THONGKE: "ad5126b2-a617-400b-868f-4ffda4e25890",
@@ -49,7 +49,7 @@ export const ROUTE_PERMISSIONS = {
   '/role': [PERMISSIONS.ROLE, PERMISSIONS.ROLE_LIST],
   '/permission': [PERMISSIONS.PERMISSION_LIST],
   '/role-permission': [PERMISSIONS.ROLEPERMISSION, PERMISSIONS.ROLEPERMISSION_LIST],
-  '/thanh-toan': [PERMISSIONS.THANHTOAN],
+  '/order-thuchi': [PERMISSIONS.ORDER_THUCHI],
   '/thong-ke': [PERMISSIONS.THONGKE],
 }
 

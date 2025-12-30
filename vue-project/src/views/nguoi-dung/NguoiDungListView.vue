@@ -34,6 +34,7 @@ async function fetchUsers() {
     const response = await getUsers()
     if (response.isSuccess) {
       users.value = response.object || []
+      console.log('Fetched users:', users.value)
     } else {
       error.value = response.message || 'Không thể tải danh sách người dùng'
     }
@@ -180,7 +181,7 @@ onMounted(() => {
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
           {{ role.title }}
         </option>
-      </select>
+      </select>   
       <input v-model="filterKeyword" class="form-control" style="flex: 1;" placeholder="Tìm theo tên đăng nhập, mã vai trò..." @keyup.enter="handleSearch" />
       <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
         <i class="fas fa-search"></i> Tìm kiếm
@@ -219,7 +220,7 @@ onMounted(() => {
               <td class="col-stt">{{ index + 1 }}</td>
               <td>{{ user.userName }}</td>
               <td>********</td>
-              <td><span class="badge badge-info">{{ getRoleName(user.roleId) }}</span></td>
+              <td><span class="badge badge-info">{{ user.roleTiTle || 'Chưa gán vai trò' }}</span></td>
               <td class="col-action">
                 <div class="dropdown" v-if="canEdit || canView || canDelete">
                   <button class="row-action-btn">⚙</button>

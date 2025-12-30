@@ -49,7 +49,7 @@ function checkRouteAccess(routePath) {
 const menuPermissions = computed(() => ({
   // Bán hàng
   hoadon: checkRouteAccess('/hoa-don'),
-  thanhtoan: checkRouteAccess('/thanh-toan'),
+  orderThuchi: checkRouteAccess('/order-thuchi'),
   thongke: checkRouteAccess('/thong-ke'),
   // Quản trị
   nguoidung: checkRouteAccess('/nguoi-dung'),
@@ -134,7 +134,7 @@ onUnmounted(() => {
           <i class="fas fa-file-invoice nav-icon"></i>
           <span class="nav-label">Hóa đơn</span>
         </RouterLink>
-        <RouterLink v-if="menuPermissions.thanhtoan" to="/thanh-toan" class="nav-item" title="Thanh toán">
+        <RouterLink v-if="menuPermissions.orderThuchi" to="/order-thuchi" class="nav-item" title="Order/Tính tiền">
           <i class="fas fa-credit-card nav-icon"></i>
           <span class="nav-label">Order/Tính tiền</span>
         </RouterLink>
