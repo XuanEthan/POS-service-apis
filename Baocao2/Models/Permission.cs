@@ -47,7 +47,7 @@
             new Permission{PermissionId = Guid.Parse("9fe142e5-c1c9-4889-baab-f7d6c0ad50c4") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_VIEW" , Title = "Xem phân quyền"},
             new Permission{PermissionId = Guid.Parse("833847c4-b54a-4f67-b6ce-39f7cd1be35b") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_DELETE" , Title = "Xóa phân quyền"},
 
-            new Permission{PermissionId = Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e255ec") , ParentId = Guid.Empty , Code = "THANHTOAN"  , Title = "Thanh toán"},
+            new Permission{PermissionId = Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e255ec") , ParentId = Guid.Empty , Code = "ORDER/THUCHI"  , Title = "Order/Thuchi"},
 
             new Permission{PermissionId = Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e25890") , ParentId = Guid.Empty , Code = "THONGKE"  , Title = "Thống kê"},
         };

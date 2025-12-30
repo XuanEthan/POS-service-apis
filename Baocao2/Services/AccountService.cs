@@ -71,7 +71,7 @@ namespace Baocao2.Services
                     token = Guid.NewGuid().ToString(),
                     jwtId = token.Id,
                     CreateTime = DateTime.UtcNow,
-                    ExpiryDate = DateTime.UtcNow.AddMinutes(10) // 4 phút
+                    ExpiryDate = DateTime.UtcNow.AddMinutes(3) // 4 phút
                 };
 
                 RefreshTokens.refreshTokens.Add(refrestToken);

@@ -13,7 +13,6 @@ namespace Baocao2.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
-        
         public UserController(UserService userService)
         {
             _userService = userService;
@@ -23,7 +22,7 @@ namespace Baocao2.Controllers
         [ActionFilter(PERMISSION_FIX.User_LIST)]
         public ResultModel GetList()
         {
-            return _userService.GetList();
+            return _userService.GetVwList();
         }
 
         [HttpGet("users/{id}")]
