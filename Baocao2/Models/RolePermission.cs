@@ -7,6 +7,10 @@
         public Guid PermissionId { get; set; }
         public int? IsDelete { get; set; }
         public int? StatusId { get; set; }
+        public Guid UseridCreated { get; set; }
+        public Guid UseridEdited { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public DateTime? DateEdited { get; set; }
     }
     public static class RolePermissions
     {

@@ -6,6 +6,12 @@
         public string? UserName { get; set; }
         public string? Password { get; set; }
         public Guid RoleId { get; set; }
+        public int? StatusId { get; set; }
+        public int? IsDelete { get; set; }
+        public Guid UseridCreated { get; set; }
+        public Guid UseridEdited { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public DateTime? DateEdited { get; set; }
     }
     
     public class User_Login
@@ -21,6 +27,12 @@
         public string? Password { get; set; }
         public Guid RoleId { get; set; }
         public string? RoleTiTle { get; set; }
+        public int? StatusId { get; set; }
+        public int? IsDelete { get; set; }
+        public Guid UseridCreated { get; set; }
+        public Guid UseridEdited { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public DateTime? DateEdited { get; set; }
     }
     public static class Users
     {

@@ -4,6 +4,7 @@ using Baocao2.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Baocao2.Controllers
 {
@@ -36,6 +37,8 @@ namespace Baocao2.Controllers
         [ActionFilter(PERMISSION_FIX.User_ADD)]
         public ResultModel Insert([FromBody] User user)
         {
+            user.UseridCreated = Guid.Parse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            user.DateCreated = DateTime.Now;
             return _userService.Insert(user);
         }
 
@@ -43,6 +46,8 @@ namespace Baocao2.Controllers
         [ActionFilter(PERMISSION_FIX.User_EDIT)]
         public ResultModel Update(Guid id, [FromBody] User user)
         {
+            user.UseridEdited = Guid.Parse(HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            user.DateEdited = DateTime.Now;
             return _userService.Update(id, user);
         }
 

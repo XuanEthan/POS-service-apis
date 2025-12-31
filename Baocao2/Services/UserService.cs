@@ -13,15 +13,21 @@ namespace Baocao2.Services
                     into ur
                 from r in ur.DefaultIfEmpty()   // LEFT JOIN
                 where
-                    u.RoleId == Guid.Empty
-                   || u.RoleId.ToString() != "9ff33dec-0671-40d7-aba9-6c8060b7f0b2"
+                   ( u.RoleId == Guid.Empty
+                   || u.RoleId.ToString() != Role_Fix.ADMIN) && u.IsDelete != IsDelete.Xoa
                 select new Vw_User
                 {
                     UserId = u.UserId,
                     UserName = u.UserName,
                     Password = u.Password,
                     RoleId = u.RoleId,
-                    RoleTiTle = r != null ? r.Title : ""
+                    RoleTiTle = r != null ? r.Title : "",
+                    StatusId = u.StatusId,
+                    IsDelete = u.IsDelete,
+                    UseridCreated = u.UseridCreated,
+                    UseridEdited = u.UseridEdited,
+                    DateCreated = u.DateCreated,
+                    DateEdited = u.DateEdited
                 };
             return query;
         }
@@ -85,6 +91,10 @@ namespace Baocao2.Services
                 UserName = user.UserName,
                 Password = user.Password,
                 RoleId = Guid.Equals(user.RoleId, Guid.Empty) ? Guid.Empty : user.RoleId,
+                StatusId = user.StatusId,
+                IsDelete = user.IsDelete,
+                UseridCreated = user.UseridCreated,
+                DateCreated = user.DateCreated
             };
 
             Users.UserList.Add(newUser);
@@ -120,6 +130,10 @@ namespace Baocao2.Services
             }
 
             existingUser.RoleId = (user.RoleId.ToString() == Guid.Empty.ToString()) ? Guid.Empty : user.RoleId;
+            existingUser.IsDelete = user.IsDelete;
+            existingUser.StatusId = user.StatusId;
+            existingUser.UseridEdited = user.UseridEdited;
+            existingUser.DateEdited = user.DateEdited;
 
             return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Cập nhật người dùng thành công", Id = existingUser.UserId, Object = existingUser };
         }

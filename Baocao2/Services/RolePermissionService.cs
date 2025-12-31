@@ -6,7 +6,7 @@ namespace Baocao2.Services
     {
         public IEnumerable<RolePermission> GetListQuery(string? roleId)
         {
-            var query = RolePermissions.List.Where(rp=>rp.RoleId.ToString() != "9ff33dec-0671-40d7-aba9-6c8060b7f0b2").AsEnumerable();
+            var query = RolePermissions.List.Where(rp=>rp.RoleId.ToString() != Role_Fix.ADMIN && rp.IsDelete != IsDelete.Xoa).AsEnumerable();
             if (!string.IsNullOrEmpty(roleId))
             {
                 query = query.Where(rp => Guid.Equals(rp.RoleId, Guid.Parse(roleId)));
@@ -61,8 +61,9 @@ namespace Baocao2.Services
                 RolePermissionId = Guid.NewGuid(),
                 RoleId = rolePermission.RoleId,
                 PermissionId = rolePermission.PermissionId,
-                IsDelete = rolePermission.IsDelete ?? 0,
-                StatusId = rolePermission.StatusId ?? 1
+                IsDelete = rolePermission.IsDelete,
+                UseridCreated = rolePermission.UseridCreated,
+                DateCreated = rolePermission.DateCreated,
             };
 
             RolePermissions.List.Add(newRolePermission);
@@ -103,7 +104,8 @@ namespace Baocao2.Services
             existingRolePermission.RoleId = rolePermission.RoleId;
             existingRolePermission.PermissionId = rolePermission.PermissionId;
             existingRolePermission.IsDelete = rolePermission.IsDelete;
-            existingRolePermission.StatusId = rolePermission.StatusId;
+            existingRolePermission.UseridEdited = rolePermission.UseridEdited;
+            existingRolePermission.DateEdited = rolePermission.DateEdited;
 
             return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Cập nhật phân quyền thành công", Id = existingRolePermission.RolePermissionId, Object = existingRolePermission };
         }

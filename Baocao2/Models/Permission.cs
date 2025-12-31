@@ -6,8 +6,14 @@
         public Guid ParentId { get; set; }
         public string Code { get; set; }
         public string Title { get; set; }
+        public int? StatusId { get; set; }
+        public int? IsDelete { get; set; }
+        public Guid UseridCreated { get; set; }
+        public Guid UseridEdited { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public DateTime? DateEdited { get; set; }
     }
-    
+
     public static class Permissions
     {
         public static List<Permission> permissions = new List<Permission>()
@@ -19,9 +25,12 @@
             new Permission{PermissionId = Guid.Parse("30c474e1-38e9-489a-a5b7-d322f0e09c59") , ParentId =  Guid.Parse("30c474e1-38e9-489a-a5b7-d322f0e09c11") , Code="HOADON_EDIT" , Title = "Sửa hóa đơn"},
             new Permission{PermissionId = Guid.Parse("30c474e1-38e9-489a-a5b7-d322f0e09c60") , ParentId =  Guid.Parse("30c474e1-38e9-489a-a5b7-d322f0e09c11") , Code="HOADON_VIEW" , Title = "Xem hóa đơn"},
             new Permission{PermissionId = Guid.Parse("30c474e1-38e9-489a-a5b7-d322f0e09c61") , ParentId =  Guid.Parse("30c474e1-38e9-489a-a5b7-d322f0e09c11") , Code="HOADON_DELETE" , Title = "Xóa hóa đơn"},
+
+            new Permission{PermissionId = Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e255ec") , ParentId = Guid.Empty , Code = "ORDER/THUCHI"  , Title = "Order/Thuchi"},
+            new Permission{PermissionId = Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e25890") , ParentId = Guid.Empty , Code = "THONGKE"  , Title = "Thống kê"},
             
             // User Permissions
-                        new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , ParentId = Guid.Empty , Code = "USER" , Title = "Quản lý người dùng"},
+            new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , ParentId = Guid.Empty , Code = "USER" , Title = "Quản lý người dùng"},
             new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139152") , ParentId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , Code = "USER_LIST" , Title = "Danh sách người dùng"},
             new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139153") , ParentId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , Code = "USER_ADD" , Title = "Thêm người dùng"},
             new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139154") ,  ParentId =Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , Code = "USER_EDIT" , Title = "Sửa người dùng"},
@@ -46,10 +55,6 @@
             new Permission{PermissionId = Guid.Parse("7719d677-ad28-4055-8831-314633797933") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_EDIT" , Title = "Sửa phân quyền"},
             new Permission{PermissionId = Guid.Parse("9fe142e5-c1c9-4889-baab-f7d6c0ad50c4") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_VIEW" , Title = "Xem phân quyền"},
             new Permission{PermissionId = Guid.Parse("833847c4-b54a-4f67-b6ce-39f7cd1be35b") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_DELETE" , Title = "Xóa phân quyền"},
-
-            new Permission{PermissionId = Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e255ec") , ParentId = Guid.Empty , Code = "ORDER/THUCHI"  , Title = "Order/Thuchi"},
-
-            new Permission{PermissionId = Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e25890") , ParentId = Guid.Empty , Code = "THONGKE"  , Title = "Thống kê"},
         };
     }
 

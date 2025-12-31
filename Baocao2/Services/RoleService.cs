@@ -6,7 +6,7 @@ namespace Baocao2.Services
     {
         public IEnumerable<Role> GetListQuery()
         {
-            var query = Roles.roles.Where(r=>r.Code != "QUANTRI").AsEnumerable();
+            var query = Roles.roles.Where(r=>r.RoleId.ToString() != Role_Fix.ADMIN && r.IsDelete != IsDelete.Xoa).AsEnumerable();
             return query;
         }
         public ResultModel GetList()
@@ -58,7 +58,11 @@ namespace Baocao2.Services
                 RoleId = Guid.NewGuid(),
                 ParentId = role.ParentId,
                 Code = role.Code,
-                Title = role.Title
+                Title = role.Title,
+                StatusId = role.StatusId,
+                IsDelete = role.IsDelete,
+                UseridCreated = role.UseridCreated,
+                DateCreated = role.DateCreated,
             };
 
             Roles.roles.Add(newObject);
@@ -106,10 +110,13 @@ namespace Baocao2.Services
             existingRole.ParentId = role.ParentId;
             existingRole.Code = role.Code;
             existingRole.Title = role.Title;
+            existingRole.StatusId = role.StatusId;
+            existingRole.IsDelete = role.IsDelete;
+            existingRole.UseridEdited = role.UseridEdited;
 
             return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Cập nhật vai trò thành công", Id = existingRole.RoleId, Object = existingRole };
         }
-
+        // delete temp
         public ResultModel Delete(Guid roleId)
         {
             var existingRole = Roles.roles.FirstOrDefault(r => r.RoleId == roleId);
@@ -153,5 +160,6 @@ namespace Baocao2.Services
 
             return false;
         }
+
     }
 }

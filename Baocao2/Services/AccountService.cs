@@ -60,7 +60,7 @@ namespace Baocao2.Services
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = claims,
-                    Expires = DateTime.UtcNow.AddMinutes(1), // 1 phút
+                    Expires = DateTime.UtcNow.AddMinutes(10), // 1 phút
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256Signature)
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -71,7 +71,7 @@ namespace Baocao2.Services
                     token = Guid.NewGuid().ToString(),
                     jwtId = token.Id,
                     CreateTime = DateTime.UtcNow,
-                    ExpiryDate = DateTime.UtcNow.AddMinutes(3) // 4 phút
+                    ExpiryDate = DateTime.UtcNow.AddMinutes(20) // 4 phút
                 };
 
                 RefreshTokens.refreshTokens.Add(refrestToken);
