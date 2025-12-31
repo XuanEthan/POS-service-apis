@@ -87,22 +87,22 @@ function resetForm() {
 // Validate form
 function validateForm() {
   errors.value = {}
-  
+
   if (!formData.value.roleId) {
     errors.value.roleId = 'Vui lòng chọn vai trò'
   }
-  
+
   if (!formData.value.permissionId) {
     errors.value.permissionId = 'Vui lòng chọn quyền'
   }
-  
+
   return Object.keys(errors.value).length === 0
 }
 
 // Handle save
 function handleSave() {
   if (!validateForm()) return
-  
+
   const data = {
     ...formData.value,
     // Generate new UUID for create mode, keep existing for edit
@@ -146,18 +146,10 @@ function getPermissionName(permissionId) {
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Vai trò <span class="required">*</span></label>
-            <select 
-              v-model="formData.roleId" 
-              class="form-control"
-              :class="{ 'is-invalid': errors.roleId }"
-              :disabled="isReadonly"
-            >
+            <select v-model="formData.roleId" class="form-control" :class="{ 'is-invalid': errors.roleId }"
+              :disabled="isReadonly">
               <option value="">-- Chọn vai trò --</option>
-              <option 
-                v-for="role in roles" 
-                :key="role.roleId" 
-                :value="role.roleId"
-              >
+              <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
                 {{ role.title }} ({{ role.code }})
               </option>
             </select>
@@ -166,25 +158,17 @@ function getPermissionName(permissionId) {
 
           <div class="form-group">
             <label class="form-label">Quyền <span class="required">*</span></label>
-            <select 
-              v-model="formData.permissionId" 
-              class="form-control"
-              :class="{ 'is-invalid': errors.permissionId }"
-              :disabled="isReadonly"
-            >
+            <select v-model="formData.permissionId" class="form-control" :class="{ 'is-invalid': errors.permissionId }"
+              :disabled="isReadonly">
               <option value="">-- Chọn quyền --</option>
-              <option 
-                v-for="permission in permissions" 
-                :key="permission.permissionId" 
-                :value="permission.permissionId"
-              >
+              <option v-for="permission in permissions" :key="permission.permissionId" :value="permission.permissionId">
                 {{ permission.title }} ({{ permission.code }})
               </option>
             </select>
             <span v-if="errors.permissionId" class="error-text">{{ errors.permissionId }}</span>
           </div>
 
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label class="form-label">Trạng thái</label>
             <select 
               v-model="formData.statusId" 
@@ -194,7 +178,7 @@ function getPermissionName(permissionId) {
               <option :value="1">Hoạt động</option>
               <option :value="0">Không hoạt động</option>
             </select>
-          </div>
+          </div> -->
 
           <!-- View mode: Show names -->
           <div v-if="isReadonly" class="info-section">
@@ -214,11 +198,7 @@ function getPermissionName(permissionId) {
           <button class="btn btn-secondary" @click="handleClose">
             {{ isReadonly ? 'Đóng' : 'Hủy' }}
           </button>
-          <button 
-            v-if="!isReadonly" 
-            class="btn btn-primary" 
-            @click="handleSave"
-          >
+          <button v-if="!isReadonly" class="btn btn-primary" @click="handleSave">
             {{ mode === 'create' ? 'Thêm mới' : 'Cập nhật' }}
           </button>
         </div>

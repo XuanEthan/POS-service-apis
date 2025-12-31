@@ -40,10 +40,10 @@ const router = createRouter({
       meta: { title: 'Quản lý người dùng', requiresAuth: true }
     },
     {
-      path: '/thanh-toan',
-      name: 'thanh-toan',
+      path: '/order-thuchi',
+      name: 'order-thuchi',
       component: ThanhToanView,
-      meta: { title: 'Thanh toán', requiresAuth: true }
+      meta: { title: 'Order/Tính tiền', requiresAuth: true }
     },
     {
       path: '/thong-ke',

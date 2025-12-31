@@ -20,8 +20,9 @@ function checkRouteAccess(routePath) {
 }
 
 // Kiểm tra quyền cho từng quick action
-const canAccessThanhToan = computed(() => checkRouteAccess('/thanh-toan'))
+const canAccessOrderThuchi = computed(() => checkRouteAccess('/order-thuchi'))
 const canAccessHoaDon = computed(() => checkRouteAccess('/hoa-don'))
+const canAccessThongKe = computed(() => checkRouteAccess('/thong-ke'))
 const canAccessNguoiDung = computed(() => checkRouteAccess('/nguoi-dung'))
 const canAccessRole = computed(() => checkRouteAccess('/role'))
 const canAccessPermission = computed(() => checkRouteAccess('/permission'))
@@ -29,8 +30,9 @@ const canAccessRolePermission = computed(() => checkRouteAccess('/role-permissio
 
 // Kiểm tra có quick action nào để hiển thị không
 const hasAnyQuickAction = computed(() => 
-  canAccessThanhToan.value || 
+  canAccessOrderThuchi.value || 
   canAccessHoaDon.value || 
+  canAccessThongKe.value ||
   canAccessNguoiDung.value || 
   canAccessRole.value || 
   canAccessPermission.value || 
@@ -87,13 +89,17 @@ const hasAnyQuickAction = computed(() =>
       <div class="quick-actions-section" v-if="hasAnyQuickAction">
         <h2 class="section-title">Truy cập nhanh</h2>
         <div class="actions-grid">
-          <RouterLink v-if="canAccessThanhToan" to="/thanh-toan" class="action-card action-primary">
+          <RouterLink v-if="canAccessOrderThuchi" to="/order-thuchi" class="action-card action-primary">
             <i class="fas fa-credit-card action-icon"></i>
             <span class="action-text">Order/Tính tiền</span>
           </RouterLink>
           <RouterLink v-if="canAccessHoaDon" to="/hoa-don" class="action-card action-info">
             <i class="fas fa-file-invoice action-icon"></i>
             <span class="action-text">Hóa đơn</span>
+          </RouterLink>
+          <RouterLink v-if="canAccessThongKe" to="/thong-ke" class="action-card action-teal">
+            <i class="fas fa-chart-bar action-icon"></i>
+            <span class="action-text">Thống kê</span>
           </RouterLink>
           <RouterLink v-if="canAccessNguoiDung" to="/nguoi-dung" class="action-card action-success">
             <i class="fas fa-user action-icon"></i>
@@ -200,10 +206,12 @@ const hasAnyQuickAction = computed(() =>
   border-bottom: 1px solid #e9ecef;
 }
 
+
 .actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fit, 120px);
   gap: 10px;
+  justify-content: start;
 }
 
 .action-card {
@@ -229,6 +237,7 @@ const hasAnyQuickAction = computed(() =>
 .action-warning { background: #f39c12; }
 .action-purple { background: #9b59b6; }
 .action-secondary { background: #6c757d; }
+.action-teal { background: #20c997; }
 
 .action-icon {
   font-size: 18px;
