@@ -114,7 +114,7 @@ async function handleSaveRolePermission(data) {
     } else {
       response = await updateRolePermission(data.rolePermissionId, data)
     }
-    
+
     if (response.isSuccess) {
       alert(modalMode.value === 'create' ? 'Thêm mới thành công!' : 'Cập nhật thành công!')
       closeModal()
@@ -130,7 +130,7 @@ async function handleSaveRolePermission(data) {
 // Xóa role permission
 async function handleDelete(rolePermissionId) {
   if (!confirm('Bạn có chắc muốn xóa phân quyền này?')) return
-  
+
   try {
     const response = await deleteRolePermission(rolePermissionId)
     if (response.isSuccess) {
@@ -182,7 +182,7 @@ const filteredRolePermissions = computed(() => {
 // Gom permissions theo từng Role
 const groupedByRole = computed(() => {
   const groups = {}
-  
+
   filteredRolePermissions.value.forEach(rp => {
     if (!groups[rp.roleId]) {
       groups[rp.roleId] = {
@@ -196,7 +196,7 @@ const groupedByRole = computed(() => {
       permissionName: getPermissionName(rp.permissionId)
     })
   })
-  
+
   return Object.values(groups)
 })
 
@@ -285,20 +285,10 @@ onMounted(() => {
               </td>
               <td class="permissions-cell">
                 <div class="permissions-wrapper">
-                  <span 
-                    v-for="perm in group.permissions" 
-                    :key="perm.rolePermissionId"
-                    class="permission-tag"
-                    :class="{ 'inactive': perm.statusId !== 1 }"
-                    :title="perm.statusId === 1 ? 'Hoạt động' : 'Không hoạt động'"
-                  >
+                  <span v-for="perm in group.permissions" :key="perm.rolePermissionId" class="permission-tag">
                     {{ perm.permissionName }}
-                    <button 
-                      v-if="canDelete" 
-                      class="remove-perm-btn" 
-                      @click.stop="handleDelete(perm.rolePermissionId)"
-                      title="Xóa quyền này"
-                    >×</button>
+                    <button v-if="canDelete" class="remove-perm-btn" @click.stop="handleDelete(perm.rolePermissionId)"
+                      title="Xóa quyền này">×</button>
                   </span>
                 </div>
               </td>
@@ -326,15 +316,8 @@ onMounted(() => {
     </div>
 
     <!-- Role Permission Modal -->
-    <RolePermissionModal
-      :visible="showModal"
-      :mode="modalMode"
-      :rolePermission="selectedRolePermission"
-      :roles="roles"
-      :permissions="permissions"
-      @close="closeModal"
-      @save="handleSaveRolePermission"
-    />
+    <RolePermissionModal :visible="showModal" :mode="modalMode" :rolePermission="selectedRolePermission" :roles="roles"
+      :permissions="permissions" @close="closeModal" @save="handleSaveRolePermission" />
   </div>
 </template>
 
@@ -420,7 +403,7 @@ onMounted(() => {
 }
 
 .remove-perm-btn {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border: none;
   color: white;
   width: 16px;
@@ -438,7 +421,7 @@ onMounted(() => {
 }
 
 .remove-perm-btn:hover {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
   transform: scale(1.1);
 }
 
@@ -462,7 +445,7 @@ onMounted(() => {
   .page-filters {
     flex-direction: column;
   }
-  
+
   .page-filters .form-control {
     width: 100%;
   }

@@ -9,6 +9,7 @@ const filterRole = ref('')
 const filterKeyword = ref('')
 const checkAll = ref(false)
 const perPage = ref(10)
+const currentPage = ref(1)
 const loading = ref(false)
 const error = ref('')
 
@@ -93,7 +94,7 @@ async function handleSaveUser(userData) {
     } else {
       response = await updateUser(userData.userId, userData)
     }
-    
+
     if (response.isSuccess) {
       alert(modalMode.value === 'create' ? 'Thêm mới thành công!' : 'Cập nhật thành công!')
       closeModal()
@@ -111,9 +112,9 @@ async function handleDelete(userId) {
   // Tìm thông tin user để hiển thị
   const user = users.value.find(u => u.userId === userId)
   const userName = user ? user.userName : 'người dùng này'
-  
+
   if (!confirm(`Bạn có chắc muốn xóa người dùng "${userName}"?\n\nHành động này không thể hoàn tác!`)) return
-  
+
   try {
     const response = await deleteUser(userId)
     if (response.isSuccess) {
@@ -133,18 +134,74 @@ function getRoleName(roleId) {
   return role ? role.title : 'N/A'
 }
 
+// Helper: Trạng thái người dùng
+function getStatusText(statusId) {
+  const s = statusId !== undefined && statusId !== null ? String(statusId) : ''
+  switch (s) {
+    case '1': return 'Đã kích hoạt'
+    case '2': return 'Chưa kích hoạt'
+    case '3': return 'Khóa'
+    default: return 'Chưa kích hoạt'
+  }
+}
+
+function statusBadgeClass(statusId) {
+  const s = statusId !== undefined && statusId !== null ? String(statusId) : ''
+  switch (s) {
+    case '1': return 'badge-success'
+    case '2': return 'badge-warning'
+    case '3': return 'badge-danger'
+    default: return 'badge-warning'
+  }
+}
+
 // Lọc users theo model User: UserId, UserName, Password, RoleId, RoleCode
 const filteredUsers = computed(() => {
   const q = filterKeyword.value.trim().toLowerCase()
-  
+
   return users.value.filter(u => {
-    const okQ = !q || 
-      (u.userName && u.userName.toLowerCase().includes(q)) || 
+    const okQ = !q ||
+      (u.userName && u.userName.toLowerCase().includes(q)) ||
       (u.roleCode && u.roleCode.toLowerCase().includes(q))
     const okRole = !filterRole.value || u.roleId === filterRole.value
     return okQ && okRole
   })
 })
+
+// Pagination computed values
+const totalItems = computed(() => filteredUsers.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / Number(perPage.value || 1))))
+
+// Ensure currentPage is within bounds when filters or perPage change
+import { watch } from 'vue'
+watch([filteredUsers, perPage], () => {
+  if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
+  if (currentPage.value < 1) currentPage.value = 1
+})
+
+const pagedUsers = computed(() => {
+  const p = Number(perPage.value || 10)
+  const start = (Number(currentPage.value || 1) - 1) * p
+  return filteredUsers.value.slice(start, start + p)
+})
+
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value--
+}
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+function goToFirst() { currentPage.value = 1 }
+function goToLast() { currentPage.value = totalPages.value }
+
+const pageStart = computed(() => {
+  if (totalItems.value === 0) return 0
+  return (Number(currentPage.value) - 1) * Number(perPage.value) + 1
+})
+
+const pageEnd = computed(() => Math.min(totalItems.value, Number(currentPage.value) * Number(perPage.value)))
 
 function handleCheckAll() {
   // Handle check all logic
@@ -181,8 +238,9 @@ onMounted(() => {
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
           {{ role.title }}
         </option>
-      </select>   
-      <input v-model="filterKeyword" class="form-control" style="flex: 1;" placeholder="Tìm theo tên đăng nhập, mã vai trò..." @keyup.enter="handleSearch" />
+      </select>
+      <input v-model="filterKeyword" class="form-control" style="flex: 1;"
+        placeholder="Tìm theo tên đăng nhập, mã vai trò..." @keyup.enter="handleSearch" />
       <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
         <i class="fas fa-search"></i> Tìm kiếm
       </button>
@@ -208,19 +266,27 @@ onMounted(() => {
               <th>Tên đăng nhập</th>
               <th>Mật khẩu</th>
               <th>Vai trò</th>
+              <th>Trạng thái</th>
               <th class="col-action">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredUsers.length === 0">
-              <td colspan="6" class="text-center">Không có dữ liệu</td>
+              <td colspan="7" class="text-center">Không có dữ liệu</td>
             </tr>
-            <tr v-for="(user, index) in filteredUsers" :key="user.userId">
+            <tr v-for="(user, index) in pagedUsers" :key="user.userId">
               <td class="col-check"><input type="checkbox" /></td>
-              <td class="col-stt">{{ index + 1 }}</td>
+              <td class="col-stt">{{ (Number(currentPage) - 1) * Number(perPage) + index + 1 }}</td>
               <td>{{ user.userName }}</td>
               <td>********</td>
-              <td><span class="badge badge-info">{{ user.roleTiTle || 'Chưa gán vai trò' }}</span></td>
+              <td>
+                <span
+                  :class="(user.roleTiTle === null || user.roleTiTle === '') ? 'badge badge-warning' : 'badge badge-info'">{{
+                    user.roleTiTle || 'Chưa gán vai trò' }}</span>
+              </td>
+              <td>
+                <span class="badge" :class="statusBadgeClass(user.statusId)">{{ getStatusText(user.statusId) }}</span>
+              </td>
               <td class="col-action">
                 <div class="dropdown" v-if="canEdit || canView || canDelete">
                   <button class="row-action-btn">⚙</button>
@@ -240,33 +306,27 @@ onMounted(() => {
 
     <!-- Table Footer -->
     <div class="table-footer">
-      <div class="perpage">
+        <div class="perpage">
         <label>Hiển thị</label>
         <select v-model="perPage">
-          <option>10</option>
-          <option>25</option>
-          <option>50</option>
+          <option :value="10">10</option>
+          <option :value="25">25</option>
+          <option :value="50">50</option>
         </select>
-        <span>Hiển thị 1 đến {{ filteredUsers.length }} / {{ filteredUsers.length }} bản ghi</span>
+        <span>Hiển thị {{ pageStart }} đến {{ pageEnd }} / {{ totalItems }} bản ghi</span>
       </div>
       <div class="pagination">
-        <button class="pg-btn">|&lt;</button>
-        <button class="pg-btn">&lt;</button>
-        <button class="pg-btn active">1</button>
-        <button class="pg-btn">&gt;</button>
-        <button class="pg-btn">&gt;|</button>
+        <button class="pg-btn" :disabled="currentPage <= 1" @click="goToFirst">|&lt;</button>
+        <button class="pg-btn" :disabled="currentPage <= 1" @click="prevPage">&lt;</button>
+        <button class="pg-btn active">{{ currentPage }} / {{ totalPages }}</button>
+        <button class="pg-btn" :disabled="currentPage >= totalPages" @click="nextPage">&gt;</button>
+        <button class="pg-btn" :disabled="currentPage >= totalPages" @click="goToLast">&gt;|</button>
       </div>
     </div>
 
     <!-- User Modal -->
-    <UserModal
-      :visible="showModal"
-      :mode="modalMode"
-      :user="selectedUser"
-      :roles="roles"
-      @close="closeModal"
-      @save="handleSaveUser"
-    />
+    <UserModal :visible="showModal" :mode="modalMode" :user="selectedUser" :roles="roles" @close="closeModal"
+      @save="handleSaveUser" />
   </div>
 </template>
 
@@ -306,7 +366,7 @@ onMounted(() => {
   .page-filters {
     grid-template-columns: 1fr;
   }
-  
+
   .page-filters .input-group {
     grid-column: span 1 !important;
   }

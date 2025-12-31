@@ -29,7 +29,8 @@ const formData = ref({
   userName: '',
   password: '',
   roleId: '',
-  roleCode: ''
+  roleCode: '',
+  statusId: ''
 })
 
 // Show password
@@ -59,7 +60,8 @@ watch(() => props.user, (newUser) => {
       userName: newUser.userName || '',
       password: '', // Don't populate password for security
       roleId: newUser.roleId || '',
-      roleCode: newUser.roleCode || ''
+      roleCode: newUser.roleCode || '',
+      statusId: newUser.statusId !== undefined && newUser.statusId !== null ? String(newUser.statusId) : ''
     }
   } else {
     resetForm()
@@ -90,7 +92,8 @@ function resetForm() {
     userName: '',
     password: '',
     roleId: '',
-    roleCode: ''
+    roleCode: '',
+    statusId: ''
   }
   errors.value = {}
 }
@@ -98,11 +101,11 @@ function resetForm() {
 // Validate form
 function validateForm() {
   errors.value = {}
-  
+
   if (!formData.value.userName || !formData.value.userName.trim()) {
     errors.value.userName = 'Tên đăng nhập không được để trống'
   }
-  
+
   // Password is required only for create mode
   if (props.mode === 'create') {
     if (!formData.value.password || !formData.value.password.trim()) {
@@ -111,16 +114,16 @@ function validateForm() {
       errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
     }
   }
-  
+
   // Vai trò không bắt buộc - người dùng có thể chọn sau
-  
+
   return Object.keys(errors.value).length === 0
 }
 
 // Handle save
 function handleSave() {
   if (!validateForm()) return
-  
+
   const data = {
     ...formData.value,
     // Generate new UUID for create mode, keep existing for edit
@@ -128,12 +131,13 @@ function handleSave() {
     // Use EMPTY_GUID if roleId is not selected
     roleId: formData.value.roleId || EMPTY_GUID
   }
+  // Ensure statusId is sent as a string/number fallback to '0' (All) if empty
+  data.statusId = formData.value.statusId !== '' ? formData.value.statusId : '2'
   console.log('Saving user data:', data)
   // Nếu đang edit và password trống, gửi null để backend biết không thay đổi
   if (props.mode === 'edit' && !data.password) {
     data.password = null
   }
-  
   emit('save', data)
 }
 
@@ -157,37 +161,23 @@ function handleClose() {
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Tên đăng nhập <span class="required">*</span></label>
-            <input 
-              v-model="formData.userName" 
-              type="text" 
-              class="form-control"
-              :class="{ 'is-invalid': errors.userName }"
-              :readonly="isReadonly"
-              placeholder="Nhập tên đăng nhập"
-            />
+            <input v-model="formData.userName" type="text" class="form-control"
+              :class="{ 'is-invalid': errors.userName }" :readonly="isReadonly" placeholder="Nhập tên đăng nhập" />
             <span v-if="errors.userName" class="error-text">{{ errors.userName }}</span>
           </div>
 
           <div class="form-group" v-if="!isReadonly">
             <label class="form-label">
-              Mật khẩu 
+              Mật khẩu
               <span v-if="mode === 'create'" class="required">*</span>
               <span v-else class="hint">(để trống nếu không đổi)</span>
             </label>
             <div class="password-input">
-              <input 
-                v-model="formData.password" 
-                :type="showPassword ? 'text' : 'password'" 
-                class="form-control"
-                :class="{ 'is-invalid': errors.password }"
-                placeholder="Nhập mật khẩu"
-              />
-              <button 
-                type="button"
-                class="password-toggle"
-                @click="showPassword = !showPassword"
-              >
-                {{ showPassword ? '🙈' : '👁️' }}
+              <input v-model="formData.password" :type="showPassword ? 'text' : 'password'" class="form-control"
+                :class="{ 'is-invalid': errors.password }" placeholder="Nhập mật khẩu" />
+              <button type="button" class="password-toggle" @click="showPassword = !showPassword">
+                <i v-if="showPassword" class="bi bi-eye-fill"></i>
+                <i v-else class="bi bi-eye-slash"></i>
               </button>
             </div>
             <span v-if="errors.password" class="error-text">{{ errors.password }}</span>
@@ -195,30 +185,22 @@ function handleClose() {
 
           <div class="form-group">
             <label class="form-label">Vai trò <span class="hint">(có thể chọn sau)</span></label>
-            <select 
-              v-model="formData.roleId" 
-              class="form-control"
-              :disabled="isReadonly"
-            >
+            <select v-model="formData.roleId" class="form-control" :disabled="isReadonly">
               <option value="">-- Chưa chọn --</option>
-              <option 
-                v-for="role in roles" 
-                :key="role.roleId" 
-                :value="role.roleId"
-              >
+              <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
                 {{ role.title }} ({{ role.code }})
               </option>
             </select>
           </div>
 
-          <div class="form-group" v-if="isReadonly && formData.roleCode">
-            <label class="form-label">Mã vai trò</label>
-            <input 
-              :value="formData.roleCode" 
-              type="text" 
-              class="form-control"
-              readonly
-            />
+          <div class="form-group">
+            <label class="form-label">Trạng thái dữ liệu</label>
+            <select v-model="formData.statusId" class="form-control" :disabled="isReadonly">
+              <option value="">-- Chưa chọn --</option>
+              <option value="1">Kích hoạt</option>
+              <option value="2">Chưa kích hoạt</option>
+              <option value="3">Khóa</option>
+            </select>
           </div>
         </div>
 
@@ -227,11 +209,7 @@ function handleClose() {
           <button class="btn btn-secondary" @click="handleClose">
             {{ isReadonly ? 'Đóng' : 'Hủy' }}
           </button>
-          <button 
-            v-if="!isReadonly" 
-            class="btn btn-primary" 
-            @click="handleSave"
-          >
+          <button v-if="!isReadonly" class="btn btn-primary" @click="handleSave">
             {{ mode === 'create' ? 'Thêm mới' : 'Cập nhật' }}
           </button>
         </div>
