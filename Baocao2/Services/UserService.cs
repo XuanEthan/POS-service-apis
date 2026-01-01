@@ -4,7 +4,7 @@ namespace Baocao2.Services
 {
     public class UserService
     {
-        public IEnumerable<Vw_User> GetVwListQuery()
+        public IEnumerable<Vw_User> GetVwListQuery() // join tu code thay vi
         {
             var query =
                 from u in Users.UserList
@@ -79,8 +79,8 @@ namespace Baocao2.Services
                 return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.NotOK, Message = "Mật khẩu không được để trống", Id = null, Object = null };
             }
 
-            var existsUsername = Users.UserList.FirstOrDefault(u => u.UserName == user.UserName);
-            if (existsUsername != null)
+            var found = Users.UserList.FirstOrDefault(u => u.UserName == user.UserName);
+            if (found != null)
             {
                 return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.UserName_Exists, Message = "Tên đăng nhập đã tồn tại", Id = null, Object = null };
             }

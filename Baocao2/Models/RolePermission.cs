@@ -12,6 +12,12 @@
         public DateTime? DateCreated { get; set; }
         public DateTime? DateEdited { get; set; }
     }
+    public class RolePermission_Add
+    {
+        public Guid RolePermissionId { get; set; }
+        public Guid RoleId { get; set; }
+        List<Guid>? PermissionIds { get; set; }
+    }
     public static class RolePermissions
     {
         public static List<RolePermission> List = new List<RolePermission>()

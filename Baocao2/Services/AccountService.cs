@@ -27,7 +27,15 @@ namespace Baocao2.Services
             {
                 return new LoginModel(false, ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct, ResultModel.BuildMessage(ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct), Guid.Empty, null, "", "");
             }
-            if (found.Password != password) // CHƯA HASH
+            if(found.StatusId == User_StatusId.UnActive)
+            {
+                return new LoginModel(false, ResultModel.ResultCode.Acc_Is_UnActive, ResultModel.BuildMessage(ResultModel.ResultCode.Acc_Is_UnActive), Guid.Empty, null, "", "");
+            }
+            if(found.StatusId == User_StatusId.Block)
+            {
+                return new LoginModel(false, ResultModel.ResultCode.Acc_Lock_By_Admin, ResultModel.BuildMessage(ResultModel.ResultCode.Acc_Lock), Guid.Empty, null, "", "");
+            }
+            if (found.Password != password) // Chua hash
             {
                 return new LoginModel(false, ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct, ResultModel.BuildMessage(ResultModel.ResultCode.Acc_Or_Pass_Does_Not_Correct), Guid.Empty, null, "", "");
             }

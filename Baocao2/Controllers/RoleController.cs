@@ -21,7 +21,7 @@ namespace Baocao2.Controllers
         }
 
         [HttpGet("roles")]
-        [ActionFilter(PERMISSION_FIX.Role_LIST)]
+        [ActionFilter(PERMISSION_FIX.Role_LIST , PERMISSION_FIX.User_ADD , PERMISSION_FIX.User_EDIT)]
         public ResultModel GetList()
         {
             return _roleService.GetList();

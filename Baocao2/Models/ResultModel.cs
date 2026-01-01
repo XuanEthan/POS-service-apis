@@ -55,7 +55,9 @@
             Err_NoneTitleMsg = 37,
             Err_PhongGiamTren18 = 38,
             Err_PhongGiamDuoi18 = 39,
-            Err_SoGiamDaTonTai = 40
+            Err_SoGiamDaTonTai = 40,
+            Acc_Is_UnActive = 42,
+            Acc_Already_has_role = 43
         }
 
         public ResultModel(bool isSuccess, ResultCode code, string message, object id = null, object obj = null)
@@ -228,6 +230,10 @@
                 case ResultCode.Err_SoGiamDaTonTai:
                     msg = "Cảnh báo : Số giam đã tồn tại trên hệ thống";
                     break;
+                case ResultCode.Acc_Is_UnActive:
+                    msg = "Tài khoản chưa được kích hoạt";
+                    break;
+
                 default:
                     msg = "";
                     break;
