@@ -1,5 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import PermissionAlert from '@/components/PermissionAlert.vue'
+import { hasPermission } from '@/utils/auth'
+import { PERMISSIONS } from '@/constants/permissions'
+
+// Kiểm tra quyền xem thống kê (có quyền THONGKE)
+const canAccessModule_thongke = computed(() => hasPermission(PERMISSIONS.THONGKE))
 
 // State
 const loading = ref(false)
@@ -108,7 +114,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container thong-ke-page">
+  <!-- Kiểm tra quyền - nếu không có quyền thì hiển thị thông báo -->
+  <PermissionAlert :hasPermission="canAccessModule_thongke" />
+
+  <div v-if="canAccessModule_thongke" class="page-container thong-ke-page">
     <!-- Page Header -->
     <div class="page-header">
       <h1 class="page-title"><i class="fas fa-chart-bar"></i> THỐNG KÊ BÁN HÀNG</h1>

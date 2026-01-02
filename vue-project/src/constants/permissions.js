@@ -15,6 +15,7 @@ export const PERMISSIONS = {
   USER_EDIT: "ebb7d7f0-ca3a-4dfe-be48-7182bf139154",
   USER_VIEW: "ebb7d7f0-ca3a-4dfe-be48-7182bf139155",
   USER_DELETE: "ebb7d7f0-ca3a-4dfe-be48-7182bf139156",
+  USER_SEARCH: "ebb7d7f0-ca3a-4dfe-be48-7182bf139133",
 
   // Role
   ROLE: "66e708f0-00f3-430d-b16d-80d58357c133",
@@ -23,6 +24,7 @@ export const PERMISSIONS = {
   ROLE_EDIT: "15206ba3-9d3f-41e3-b484-90b4b5fdc83d",
   ROLE_VIEW: "9eb5cd87-3303-4455-bc48-1fd4747bebfe",
   ROLE_DELETE: "28f5e266-cba7-4a75-b145-5cd612641d98",
+  ROLE_SEARCH: "28f5e266-cba7-4a75-b145-5cd612641d33",
 
   // Permission
   PERMISSION_LIST: "31f88c91-96fa-4ddc-bef7-d7cf71ed2480",
@@ -34,6 +36,7 @@ export const PERMISSIONS = {
   ROLEPERMISSION_EDIT: "7719d677-ad28-4055-8831-314633797933",
   ROLEPERMISSION_VIEW: "9fe142e5-c1c9-4889-baab-f7d6c0ad50c4",
   ROLEPERMISSION_DELETE: "833847c4-b54a-4f67-b6ce-39f7cd1be35b",
+  ROLEPERMISSION_SEARCH: "833847c4-b54a-4f67-b6ce-39f7cd1be399",
 
   // Order/Thuchi
   ORDER_THUCHI: "ad5126b2-a617-400b-868f-4ffda4e255ec",
@@ -44,11 +47,11 @@ export const PERMISSIONS = {
 
 // Route permission mapping - Ánh xạ route với quyền cần thiết
 export const ROUTE_PERMISSIONS = {
-  '/hoa-don': [PERMISSIONS.HOADON, PERMISSIONS.HOADON_LIST],
-  '/nguoi-dung': [PERMISSIONS.USER, PERMISSIONS.USER_LIST],
-  '/role': [PERMISSIONS.ROLE, PERMISSIONS.ROLE_LIST],
+  '/hoa-don': [PERMISSIONS.HOADON, PERMISSIONS.HOADON_LIST , PERMISSIONS.HOADON_ADD, PERMISSIONS.HOADON_EDIT, PERMISSIONS.HOADON_VIEW, PERMISSIONS.HOADON_DELETE],
+  '/nguoi-dung': [PERMISSIONS.USER, PERMISSIONS.USER_LIST , PERMISSIONS.USER_ADD, PERMISSIONS.USER_EDIT, PERMISSIONS.USER_VIEW, PERMISSIONS.USER_DELETE],
+  '/role': [PERMISSIONS.ROLE, PERMISSIONS.ROLE_LIST , PERMISSIONS.ROLE_ADD, PERMISSIONS.ROLE_EDIT, PERMISSIONS.ROLE_VIEW, PERMISSIONS.ROLE_DELETE],
   '/permission': [PERMISSIONS.PERMISSION_LIST],
-  '/role-permission': [PERMISSIONS.ROLEPERMISSION, PERMISSIONS.ROLEPERMISSION_LIST],
+  '/role-permission': [PERMISSIONS.ROLEPERMISSION, PERMISSIONS.ROLEPERMISSION_LIST ],
   '/order-thuchi': [PERMISSIONS.ORDER_THUCHI],
   '/thong-ke': [PERMISSIONS.THONGKE],
 }
@@ -70,6 +73,7 @@ export const FEATURE_PERMISSIONS = {
     edit: PERMISSIONS.USER_EDIT,
     view: PERMISSIONS.USER_VIEW,
     delete: PERMISSIONS.USER_DELETE,
+    search: PERMISSIONS.USER_SEARCH,
   },
   // Role features
   role: {
@@ -78,6 +82,7 @@ export const FEATURE_PERMISSIONS = {
     edit: PERMISSIONS.ROLE_EDIT,
     view: PERMISSIONS.ROLE_VIEW,
     delete: PERMISSIONS.ROLE_DELETE,
+    search: PERMISSIONS.ROLE_SEARCH,
   },
   // Permission features
   permission: {
@@ -90,7 +95,19 @@ export const FEATURE_PERMISSIONS = {
     edit: PERMISSIONS.ROLEPERMISSION_EDIT,
     view: PERMISSIONS.ROLEPERMISSION_VIEW,
     delete: PERMISSIONS.ROLEPERMISSION_DELETE,
+    search: PERMISSIONS.ROLEPERMISSION_SEARCH,
   },
+}
+
+// Mapping tên tài nguyên dễ đọc
+export const MODULE_LABELS = {
+  hoadon: 'Hóa đơn',
+  user: 'Người dùng',
+  role: 'Vai trò',
+  permission: 'Quyền hạn',
+  rolePermission: 'Phân quyền',
+  orderThuchi: 'Thanh toán',
+  thongke: 'Thống kê',
 }
 
 export default PERMISSIONS

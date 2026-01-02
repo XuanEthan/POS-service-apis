@@ -1,20 +1,28 @@
 <template>
-  <div class="forbidden-container">
+  <div class="page-container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">403 - TRUY CẬP BỊ TỪ CHỐI</h1>
+    </div>
+
+    <!-- Content -->
     <div class="forbidden-content">
-      <div class="forbidden-icon">🚫</div>
-      <h1 class="forbidden-title">403</h1>
-      <h2 class="forbidden-subtitle">Không có quyền truy cập</h2>
-      <p class="forbidden-message">
-        Xin lỗi, bạn không có quyền truy cập trang này. 
-        Vui lòng liên hệ quản trị viên nếu bạn cho rằng đây là lỗi.
-      </p>
-      <div class="forbidden-actions">
-        <button @click="goBack" class="btn btn-secondary">
-          ← Quay lại
-        </button>
-        <button @click="goHome" class="btn btn-primary">
-          🏠 Về trang chủ
-        </button>
+      <div class="forbidden-card">
+        <div class="forbidden-icon">🚫</div>
+        <h2 class="forbidden-message">
+          Xin lỗi, bạn không có quyền truy cập trang này.
+        </h2>
+        <p class="forbidden-description">
+          Vui lòng liên hệ quản trị viên nếu bạn cho rằng đây là lỗi.
+        </p>
+        <div class="forbidden-actions">
+          <button @click="goBack" class="btn btn-secondary">
+            ← Quay lại
+          </button>
+          <button @click="goHome" class="btn btn-primary">
+            🏠 Về trang chủ
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -35,82 +43,123 @@ function goHome() {
 </script>
 
 <style scoped>
-.forbidden-container {
+.page-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f5f6fa;
+}
+
+.page-header {
+  background: white;
   padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .forbidden-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.forbidden-card {
   background: white;
-  border-radius: 16px;
-  padding: 48px;
+  border-radius: 4px;
+  padding: 48px 40px;
   text-align: center;
   max-width: 500px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #e74c3c;
 }
 
 .forbidden-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.forbidden-title {
-  font-size: 72px;
-  font-weight: 700;
-  color: #e74c3c;
-  margin: 0;
-  line-height: 1;
-}
-
-.forbidden-subtitle {
-  font-size: 24px;
-  color: #2c3e50;
-  margin: 16px 0;
+  font-size: 80px;
+  margin-bottom: 20px;
 }
 
 .forbidden-message {
+  font-size: 18px;
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+}
+
+.forbidden-description {
   color: #7f8c8d;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.6;
   margin-bottom: 32px;
 }
 
 .forbidden-actions {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   justify-content: center;
 }
 
 .btn {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #3498db;
   color: white;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #2980b9;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
 }
 
 .btn-secondary {
   background: #ecf0f1;
   color: #2c3e50;
+  border: 1px solid #bdc3c7;
 }
 
 .btn-secondary:hover {
   background: #bdc3c7;
+  border-color: #95a5a6;
+}
+
+@media (max-width: 768px) {
+  .forbidden-card {
+    padding: 32px 20px;
+    max-width: 100%;
+  }
+
+  .forbidden-icon {
+    font-size: 60px;
+    margin-bottom: 16px;
+  }
+
+  .forbidden-message {
+    font-size: 16px;
+  }
+
+  .forbidden-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }
 </style>

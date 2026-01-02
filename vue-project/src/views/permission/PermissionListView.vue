@@ -1,13 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { getPermissions, deletePermission } from '@/services/permissionService'
 import TreeView from '@/components/TreeView.vue'
+import PermissionAlert from '@/components/PermissionAlert.vue'
+import { canAccessModule } from '@/utils/auth'
 
 const filterKeyword = ref('')
 const loading = ref(false)
 const error = ref('')
 
 const permissions = ref([])
+
+// Kiểm tra quyền truy cập module permission (bất kỳ quyền nào)
+const canAccessModule_permission = computed(() => canAccessModule('permission'))
 
 // Fetch permissions từ API
 async function fetchPermissions() {
@@ -67,7 +72,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
+  <!-- Kiểm tra quyền - nếu không có quyền nào liên quan thì hiển thị thông báo -->
+  <PermissionAlert :hasPermission="canAccessModule_permission" />
+
+  <div v-if="canAccessModule_permission" class="page-container">
     <!-- Page Header -->
     <div class="page-header">
       <h1 class="page-title">QUẢN LÝ QUYỀN</h1>

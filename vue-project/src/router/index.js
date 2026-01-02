@@ -11,6 +11,7 @@ import RoleListView from '@/views/role/RoleListView.vue'
 import PermissionListView from '@/views/permission/PermissionListView.vue'
 import RolePermissionListView from '@/views/role-permission/RolePermissionListView.vue'
 import LoginView from '@/views/auth/LoginView.vue'
+import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,38 +69,44 @@ const router = createRouter({
       name: 'role-permission',
       component: RolePermissionListView,
       meta: { title: 'Quản lý phân quyền', requiresAuth: true }
+    },
+    {
+      path: '/forbidden',
+      name: 'forbidden',
+      component: ForbiddenView,
+      meta: { title: 'Truy cập bị từ chối', requiresAuth: false }
     }
   ],
 })
 
-// // Navigation Guard - Kiểm tra đăng nhập và quyền truy cập
-// router.beforeEach((to, from, next) => {
-//   // Cập nhật title trang
-//   document.title = to.meta.title ? `${to.meta.title} - POS System` : 'POS System'
+// Navigation Guard - Kiểm tra đăng nhập và quyền truy cập
+router.beforeEach((to, from, next) => {
+  // Cập nhật title trang
+  document.title = to.meta.title ? `${to.meta.title} - POS System` : 'POS System'
   
-//   // Kiểm tra route yêu cầu đăng nhập
-//   if (to.meta.requiresAuth !== false) {
-//     if (!isAuthenticated()) {
-//       // Chưa đăng nhập -> chuyển đến trang login
-//       next({ name: 'login', query: { redirect: to.fullPath } })
-//       return
-//     }
+  // Kiểm tra route yêu cầu đăng nhập
+  if (to.meta.requiresAuth !== false) {
+    if (!isAuthenticated()) {
+      // Chưa đăng nhập -> chuyển đến trang login
+      next({ name: 'login', query: { redirect: to.fullPath } })
+      return
+    }
     
-//     // Kiểm tra quyền truy cập route
-//     // Nếu không có quyền -> chuyển về dashboard (ẩn chức năng thay vì hiện forbidden)
-//     if (!canAccessRoute(to.path)) {
-//       next({ name: 'dashboard' })
-//       return
-//     }
-//   }
+    // Kiểm tra quyền truy cập route
+    // Nếu không có quyền -> chuyển đến trang forbidden
+    if (!canAccessRoute(to.path)) {
+      next({ name: 'forbidden' })
+      return
+    }
+  }
   
-//   // Nếu đã đăng nhập mà vào trang login -> chuyển về dashboard
-//   if (to.name === 'login' && isAuthenticated()) {
-//     next({ name: 'dashboard' })
-//     return
-//   }
+  // Nếu đã đăng nhập mà vào trang login -> chuyển về dashboard
+  if (to.name === 'login' && isAuthenticated()) {
+    next({ name: 'dashboard' })
+    return
+  }
   
-//   next()
-// })
+  next()
+})
 
 export default router

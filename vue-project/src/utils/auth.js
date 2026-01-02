@@ -295,6 +295,35 @@ export function canAccessRoute(routePath) {
 }
 
 /**
+ * Kiểm tra user có quyền truy cập module (bất kỳ quyền nào: list, add, edit, delete)
+ * Dùng để quyết định có hiển thị PermissionAlert hay không
+ * Nếu user có bất kỳ quyền nào liên quan → cho vào
+ * Chỉ block khi user không có bất kỳ quyền nào
+ * Admin sẽ bypass tất cả các kiểm tra quyền
+ * @param {string} module - Tên module (hoadon, user, role, permission, rolePermission)
+ * @returns {boolean}
+ */
+export function canAccessModule(module) {
+  // Admin bypass tất cả
+  if (isAdmin()) return true
+  
+  const modulePermissions = FEATURE_PERMISSIONS[module]
+  if (!modulePermissions) return false
+  
+  // Kiểm tra xem user có BẤT KỲ quyền nào của module không (list, add, edit, delete, view)
+  const actions = ['list', 'add', 'edit', 'delete', 'view']
+  
+  for (const action of actions) {
+    const requiredPermission = modulePermissions[action]
+    if (requiredPermission && hasPermission(requiredPermission)) {
+      return true // Có ít nhất một quyền liên quan
+    }
+  }
+  
+  return false // Không có bất kỳ quyền nào
+}
+
+/**
  * Kiểm tra user có quyền thực hiện feature không
  * Admin sẽ bypass tất cả các kiểm tra quyền
  * @param {string} module - Tên module (permission, role, rolePermission, ...)
@@ -536,6 +565,7 @@ export default {
   hasAnyPermission,
   hasAllPermissions,
   canAccessRoute,
+  canAccessModule,
   canDoAction,
   parseJwt,
   isTokenExpired,
