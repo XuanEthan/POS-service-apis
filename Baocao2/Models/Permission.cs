@@ -36,6 +36,8 @@
             new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139154") ,  ParentId =Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , Code = "USER_EDIT" , Title = "Sửa người dùng"},
             new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139155") , ParentId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , Code = "USER_VIEW" , Title = "Xem người dùng"},
             new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139156") , ParentId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , Code = "USER_DELETE" , Title = "Xóa người dùng"},
+                        new Permission{PermissionId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139133") , ParentId = Guid.Parse("ebb7d7f0-ca3a-4dfe-be48-7182bf139111") , Code = "USER_SEARCH" , Title = "Tìm kiếm người dùng"},
+
             
             // Role Permissions
             new Permission{PermissionId = Guid.Parse("66e708f0-00f3-430d-b16d-80d58357c133") , ParentId = Guid.Empty , Code = "ROLE" , Title = "Quản lý vai trò"},
@@ -44,6 +46,8 @@
             new Permission{PermissionId = Guid.Parse("15206ba3-9d3f-41e3-b484-90b4b5fdc83d") , ParentId = Guid.Parse("66e708f0-00f3-430d-b16d-80d58357c133") , Code = "ROLE_EDIT" , Title = "Sửa vai trò"},
             new Permission{PermissionId = Guid.Parse("9eb5cd87-3303-4455-bc48-1fd4747bebfe") , ParentId = Guid.Parse("66e708f0-00f3-430d-b16d-80d58357c133") , Code = "ROLE_VIEW" , Title = "Xem vai trò"},
             new Permission{PermissionId = Guid.Parse("28f5e266-cba7-4a75-b145-5cd612641d98") , ParentId = Guid.Parse("66e708f0-00f3-430d-b16d-80d58357c133") , Code = "ROLE_DELETE" , Title = "Xóa vai trò"},
+                        new Permission{PermissionId = Guid.Parse("28f5e266-cba7-4a75-b145-5cd612641d33") , ParentId = Guid.Parse("66e708f0-00f3-430d-b16d-80d58357c133") , Code = "ROLE_SEARCH" , Title = "Tìm kiếm vai trò"},
+
             
             // Permission Permissions
             new Permission{PermissionId = Guid.Parse("31f88c91-96fa-4ddc-bef7-d7cf71ed2480") , ParentId = Guid.Empty , Code = "PERMISSION_LIST" , Title = "Danh sách quyền"},
@@ -55,6 +59,8 @@
             new Permission{PermissionId = Guid.Parse("7719d677-ad28-4055-8831-314633797933") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_EDIT" , Title = "Sửa phân quyền"},
             new Permission{PermissionId = Guid.Parse("9fe142e5-c1c9-4889-baab-f7d6c0ad50c4") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_VIEW" , Title = "Xem phân quyền"},
             new Permission{PermissionId = Guid.Parse("833847c4-b54a-4f67-b6ce-39f7cd1be35b") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_DELETE" , Title = "Xóa phân quyền"},
+                        new Permission{PermissionId = Guid.Parse("833847c4-b54a-4f67-b6ce-39f7cd1be399") , ParentId = Guid.Parse("c439a659-a054-41b5-87f8-82fc683d6211") , Code = "ROLEPERMISSION_SEARCH" , Title = "Tìm kiếm phân quyền"},
+
         };
     }
 
