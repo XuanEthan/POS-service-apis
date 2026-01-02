@@ -1,5 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { canAccessModule } from '@/utils/auth'
+import PermissionAlert from '@/components/PermissionAlert.vue'
+
+// Kiểm tra quyền truy cập module hóa đơn (bất kỳ quyền nào: list, add, edit, delete)
+const canAccessModule_hoadon = computed(() => canAccessModule('hoadon'))
 
 const invoices = ref([
   { id: 'INV-001', customer: 'Cửa hàng A', date: '2025-11-05', due: '2025-12-05', amount: 980000, status: 'paid' },
@@ -50,7 +55,10 @@ function handleCheckAll() {
 </script>
 
 <template>
-  <div class="page-container">
+  <!-- Kiểm tra quyền - nếu không có quyền nào liên quan thì hiển thị thông báo -->
+  <PermissionAlert :hasPermission="canAccessModule_hoadon" />
+
+  <div v-if="canAccessModule_hoadon" class="page-container">
     <!-- Page Header -->
     <div class="page-header">
       <h1 class="page-title">QUẢN LÝ HÓA ĐƠN</h1>

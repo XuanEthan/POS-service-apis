@@ -4,7 +4,8 @@ import { getRolePermissions, deleteRolePermission, createRolePermission, updateR
 import { getRoles } from '@/services/roleService'
 import { getPermissions } from '@/services/permissionService'
 import RolePermissionModal from '@/components/RolePermissionModal.vue'
-import { canDoAction } from '@/utils/auth'
+import PermissionAlert from '@/components/PermissionAlert.vue'
+import { canAccessModule, canDoAction } from '@/utils/auth'
 
 const filterRole = ref('')
 const filterPermission = ref('')
@@ -23,7 +24,8 @@ const showModal = ref(false)
 const modalMode = ref('create') // 'create', 'edit', 'view'
 const selectedRolePermission = ref({})
 
-// Kiểm tra quyền cho các action
+// Kiểm tra quyền truy cập module rolePermission (bất kỳ quyền nào)
+const canAccessModule_rolePermission = computed(() => canAccessModule('rolePermission'))
 const canAdd = computed(() => canDoAction('rolePermission', 'add'))
 const canEdit = computed(() => canDoAction('rolePermission', 'edit'))
 const canView = computed(() => canDoAction('rolePermission', 'view'))
@@ -217,7 +219,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
+  <!-- Kiểm tra quyền - nếu không có quyền thì hiển thị thông báo -->
+  <PermissionAlert :hasPermission="canAccessModule_rolePermission" />
+
+  <div v-if="canAccessModule_rolePermission" class="page-container">
     <!-- Page Header -->
     <div class="page-header">
       <h1 class="page-title">PHÂN QUYỀN</h1>

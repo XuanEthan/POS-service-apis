@@ -3,7 +3,9 @@ import { ref, computed, onMounted } from 'vue'
 import { getUsers, deleteUser, createUser, updateUser } from '@/services/userService'
 import { getRoles } from '@/services/roleService'
 import UserModal from '@/components/UserModal.vue'
-import { canDoAction } from '@/utils/auth'
+import PermissionAlert from '@/components/PermissionAlert.vue'
+import { canAccessModule, canDoAction } from '@/utils/auth'
+import { MODULE_LABELS } from '@/constants/permissions'
 
 const filterRole = ref('')
 const filterKeyword = ref('')
@@ -21,7 +23,8 @@ const showModal = ref(false)
 const modalMode = ref('create') // 'create', 'edit', 'view'
 const selectedUser = ref({})
 
-// Kiểm tra quyền cho các action
+// Kiểm tra quyền truy cập module user (bất kỳ quyền nào)
+const canAccessModule_user = computed(() => canAccessModule('user'))
 const canAdd = computed(() => canDoAction('user', 'add'))
 const canEdit = computed(() => canDoAction('user', 'edit'))
 const canView = computed(() => canDoAction('user', 'view'))
@@ -33,10 +36,15 @@ async function fetchUsers() {
   error.value = ''
   try {
     const response = await getUsers()
+    console.log('API response for getUsers:', response)
     if (response.isSuccess) {
       users.value = response.object || []
       console.log('Fetched users:', users.value)
     } else {
+      if(response.code === 403){
+        error.value = `❌ Truy cập bị từ chối! Bạn không có quyền xem danh sách "${MODULE_LABELS.user || 'người dùng'}". Vui lòng liên hệ quản trị viên.`
+        return
+      }
       error.value = response.message || 'Không thể tải danh sách người dùng'
     }
   } catch (e) {
@@ -219,7 +227,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
+  <!-- Kiểm tra quyền - nếu không có quyền nào liên quan thì hiển thị thông báo -->
+  <PermissionAlert :hasPermission="canAccessModule_user" />
+
+  <div v-if="canAccessModule_user" class="page-container">
     <!-- Page Header -->
     <div class="page-header">
       <h1 class="page-title">QUẢN LÝ NGƯỜI DÙNG</h1>
@@ -246,18 +257,21 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Loading / Error -->
-    <div v-if="loading" class="loading-indicator">
-      <span>Đang tải dữ liệu...</span>
-    </div>
-    <div v-if="error" class="error-message">
-      <span>{{ error }}</span>
-      <button class="btn btn-sm btn-primary" @click="fetchUsers">Thử lại</button>
-    </div>
-
     <!-- Table -->
-    <div class="page-content" v-if="!loading">
-      <div class="table-responsive">
+    <div class="page-content">
+      <!-- Loading -->
+      <div v-if="loading" class="loading-indicator">
+        <span>Đang tải dữ liệu...</span>
+      </div>
+
+      <!-- Error Message -->
+      <div v-else-if="error" class="error-message">
+        <span>{{ error }}</span>
+        <button class="btn btn-sm btn-primary" @click="fetchUsers">Thử lại</button>
+      </div>
+
+      <!-- Table Data -->
+      <div v-else class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
@@ -305,7 +319,7 @@ onMounted(() => {
     </div>
 
     <!-- Table Footer -->
-    <div class="table-footer">
+    <div class="table-footer" v-if="!error && !loading">
         <div class="perpage">
         <label>Hiển thị</label>
         <select v-model="perPage">

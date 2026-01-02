@@ -146,17 +146,6 @@ onUnmounted(() => {
 
       <!-- Spacer -->
       <div class="navbar-spacer"></div>
-
-      <!-- Thông tin bổ sung (thời gian, server) -->
-      <!-- <div class="navbar-info">
-        <span class="info-item">
-          <i class="fas fa-circle" style="color: #27ae60; font-size: 8px;"></i> Đã kết nối
-        </span>
-        <span class="info-item clock">
-          <i class="far fa-clock"></i> {{ currentTime }}
-        </span>
-      </div> -->
-
       <!-- Menu quản trị (bên phải) - Dropdown -->
       <div class="navbar-menu-right" v-if="showAdminGroup">
         <div class="nav-dropdown">

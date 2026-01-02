@@ -5,7 +5,8 @@ import { getUsers } from '@/services/userService'
 import { getRolePermissions } from '@/services/rolePermissionService'
 import TreeView from '@/components/TreeView.vue'
 import RoleModal from '@/components/RoleModal.vue'
-import { canDoAction } from '@/utils/auth'
+import PermissionAlert from '@/components/PermissionAlert.vue'
+import { canAccessModule, canDoAction } from '@/utils/auth'
 
 const filterKeyword = ref('')
 const loading = ref(false)
@@ -18,7 +19,8 @@ const showModal = ref(false)
 const modalMode = ref('create') // 'create', 'edit', 'view'
 const selectedRole = ref({})
 
-// Kiểm tra quyền cho các action
+// Kiểm tra quyền truy cập module role (bất kỳ quyền nào)
+const canAccessModule_role = computed(() => canAccessModule('role'))
 const canAdd = computed(() => canDoAction('role', 'add'))
 const canEdit = computed(() => canDoAction('role', 'edit'))
 const canView = computed(() => canDoAction('role', 'view'))
@@ -171,7 +173,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
+  <!-- Kiểm tra quyền - nếu không có quyền nào liên quan thì hiển thị thông báo -->
+  <PermissionAlert :hasPermission="canAccessModule_role" />
+
+  <div v-if="canAccessModule_role" class="page-container">
     <!-- Page Header -->
     <div class="page-header">
       <h1 class="page-title">QUẢN LÝ VAI TRÒ</h1>
