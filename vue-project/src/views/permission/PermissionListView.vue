@@ -4,6 +4,7 @@ import { getPermissions, deletePermission } from '@/services/permissionService'
 import TreeView from '@/components/TreeView.vue'
 import PermissionAlert from '@/components/PermissionAlert.vue'
 import { canAccessModule } from '@/utils/auth'
+import { MODULE_LABELS } from '@/constants/permissions'
 
 const filterKeyword = ref('')
 const loading = ref(false)
@@ -23,6 +24,10 @@ async function fetchPermissions() {
     if (response.isSuccess) {
       permissions.value = response.object || []
     } else {
+      if(response.code === 403){
+        error.value = `❌ Truy cập bị từ chối! Bạn không có quyền xem danh sách "${MODULE_LABELS.permission || 'quyền'}". Vui lòng liên hệ quản trị viên.`
+        return
+      }
       error.value = response.message || 'Không thể tải danh sách quyền'
     }
   } catch (e) {
@@ -91,10 +96,6 @@ onMounted(() => {
 
     <!-- Filters -->
     <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
-      <input v-model="filterKeyword" class="form-control" style="flex: 1; max-width: 400px;" placeholder="Tìm theo mã hoặc tên quyền..." />
-      <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;">
-        <i class="fas fa-search"></i> Tìm kiếm
-      </button>
       <div style="flex: 1;"></div>
       <div class="tree-stats" style="flex: 0 0 auto; font-size: 12px; color: #666;">
         Tổng: <strong>{{ permissions.length }}</strong> quyền
@@ -111,7 +112,7 @@ onMounted(() => {
     </div>
 
     <!-- Tree View -->
-    <div class="page-content" v-if="!loading">
+    <div class="page-content" v-if="!loading && !error">
       <TreeView
         :items="permissions"
         id-key="permissionId"

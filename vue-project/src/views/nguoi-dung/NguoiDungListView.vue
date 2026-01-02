@@ -8,6 +8,7 @@ import { canAccessModule, canDoAction } from '@/utils/auth'
 import { MODULE_LABELS } from '@/constants/permissions'
 
 const filterRole = ref('')
+const filterStatus = ref('')
 const filterKeyword = ref('')
 const checkAll = ref(false)
 const perPage = ref(10)
@@ -172,7 +173,8 @@ const filteredUsers = computed(() => {
       (u.userName && u.userName.toLowerCase().includes(q)) ||
       (u.roleCode && u.roleCode.toLowerCase().includes(q))
     const okRole = !filterRole.value || u.roleId === filterRole.value
-    return okQ && okRole
+    const okStatus = !filterStatus.value || String(u.statusId) === filterStatus.value
+    return okQ && okRole && okStatus
   })
 })
 
@@ -244,14 +246,18 @@ onMounted(() => {
 
     <!-- Filters -->
     <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
-      <select v-model="filterRole" class="form-control" style="flex: 0 0 160px;">
+      <select v-model="filterRole" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Vai trò --</option>
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
           {{ role.title }}
         </option>
-      </select>
-      <input v-model="filterKeyword" class="form-control" style="flex: 1;"
-        placeholder="Tìm theo tên đăng nhập, mã vai trò..." @keyup.enter="handleSearch" />
+      </select>      <select v-model="filterStatus" class="form-control" style="flex: 0 0 140px;">
+        <option value="">-- Trạng thái --</option>
+        <option value="1">Đã kích hoạt</option>
+        <option value="2">Chưa kích hoạt</option>
+        <option value="3">Khóa</option>
+      </select>      <input v-model="filterKeyword" class="form-control" style="flex: 0 0 250px;"
+        placeholder="Tìm theo tên đăng nhập" @keyup.enter="handleSearch" />
       <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
         <i class="fas fa-search"></i> Tìm kiếm
       </button>
