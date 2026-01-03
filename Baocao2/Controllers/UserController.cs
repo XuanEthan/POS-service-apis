@@ -21,9 +21,9 @@ namespace Baocao2.Controllers
 
         [HttpGet("users")]
         [ActionFilter(PERMISSION_FIX.User_LIST)]
-        public ResultModel GetList()
+        public ResultModel GetList([FromQuery] User_Search? user_Search)
         {
-            return _userService.GetVwList();
+            return _userService.GetVwList(user_Search);
         }
 
         [HttpGet("users/{id}")]

@@ -34,12 +34,18 @@
         public DateTime? DateCreated { get; set; }
         public DateTime? DateEdited { get; set; }
     }
+    public class User_Search
+    {
+        public string? Search { get; set; }
+        public Guid RoleId { get; set; }
+        public int StatusId { get; set; }
+    }
     public static class Users
     {
         public static List<User> UserList = new List<User>
         {
             new User { UserId = Guid.NewGuid(), UserName = "admin", Password = "1", RoleId = Guid.Parse("9ff33dec-0671-40d7-aba9-6c8060b7f0b2")},
-            new User { UserId = Guid.NewGuid(), UserName = "user", Password = "1", RoleId = Guid.Parse("7febfdd7-1fa9-4312-80b5-c993810479db")}
+            new User { UserId = Guid.NewGuid(), UserName = "user", Password = "1", RoleId = Guid.Parse("7febfdd7-1fa9-4312-80b5-c993810479db") , StatusId = 1}
         };
     }
 

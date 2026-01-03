@@ -26,6 +26,13 @@
             new RolePermission{RolePermissionId = Guid.NewGuid() , RoleId = Guid.Parse("7febfdd7-1fa9-4312-80b5-c993810479db") , PermissionId=Guid.Parse("ad5126b2-a617-400b-868f-4ffda4e255ec")},
         };
     }
+
+    public class RolePermission_Search
+    {
+        public Guid PermissionId { get; set; }
+        public Guid RoleId { get; set; }
+    }
+
     public partial class PERMISSION_FIX
     {
         public const string Role_Permisstion = "7ba31e3a-c7d6-4b77-a26d-2d540c768378";
