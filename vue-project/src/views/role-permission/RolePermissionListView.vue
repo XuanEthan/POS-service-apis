@@ -6,12 +6,11 @@ import { getPermissions } from '@/services/permissionService'
 import RolePermissionModal from '@/components/RolePermissionModal.vue'
 import PermissionAlert from '@/components/PermissionAlert.vue'
 import { canAccessModule, canDoAction } from '@/utils/auth'
-import { MODULE_LABELS } from '@/constants/permissions'
+import { MODULE_LABELS, FEATURE_PERMISSIONS } from '@/constants/permissions'
+import uuid from '@/utils/uuid'
 
 const filterRole = ref('')
 const filterPermission = ref('')
-const filterKeyword = ref('')
-const filterStatus = ref('')
 const checkAll = ref(false)
 const perPage = ref(10)
 const loading = ref(false)
@@ -32,13 +31,17 @@ const canAdd = computed(() => canDoAction('rolePermission', 'add'))
 const canEdit = computed(() => canDoAction('rolePermission', 'edit'))
 const canView = computed(() => canDoAction('rolePermission', 'view'))
 const canDelete = computed(() => canDoAction('rolePermission', 'delete'))
+const canSearch_rolePermission = computed(() => {
+  const hasSearchAction = !!FEATURE_PERMISSIONS.rolePermission?.search
+  return hasSearchAction ? canDoAction('rolePermission', 'search') : canDoAction('rolePermission', 'list')
+})
 
-// Fetch role permissions từ API
-async function fetchRolePermissions() {
+// Fetch role permissions từ API (supports server-side filters)
+async function fetchRolePermissions(filters = {}) {
   loading.value = true
   error.value = ''
   try {
-    const response = await getRolePermissions()
+    const response = await getRolePermissions(filters)
     if (response.isSuccess) {
       rolePermissions.value = response.object || []
     } else {
@@ -177,19 +180,9 @@ function getStatusClass(statusId) {
   return 'badge badge-secondary'
 }
 
-// Lọc role permissions
+// Server-side filtered role permissions (frontend simply shows returned list)
 const filteredRolePermissions = computed(() => {
-  const q = filterKeyword.value.trim().toLowerCase()
-  
-  return rolePermissions.value.filter(rp => {
-    const okRole = !filterRole.value || rp.roleId === filterRole.value
-    const okPermission = !filterPermission.value || rp.permissionId === filterPermission.value
-    const okStatus = !filterStatus.value || String(rp.statusId) === filterStatus.value
-    const okKeyword = !q || 
-      getRoleName(rp.roleId).toLowerCase().includes(q) ||
-      getPermissionName(rp.permissionId).toLowerCase().includes(q)
-    return okRole && okPermission && okStatus && okKeyword
-  })
+  return rolePermissions.value
 })
 
 // Gom permissions theo từng Role
@@ -217,8 +210,12 @@ function handleCheckAll() {
   // Handle check all logic
 }
 
-function handleSearch() {
-  // Trigger filter - computed sẽ tự động cập nhật
+async function handleSearch() {
+  if (!canSearch_rolePermission.value) return
+  const filters = {}
+  if (filterRole.value) filters.roleId = filterRole.value || uuid.EMPTY_GUID
+  if (filterPermission.value) filters.permissionId = filterPermission.value || uuid.EMPTY_GUID
+  await fetchRolePermissions(filters)
 }
 
 // Load dữ liệu khi component mount
@@ -246,7 +243,7 @@ onMounted(() => {
     </div>
 
     <!-- Filters -->
-    <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+    <div v-if="canSearch_rolePermission" class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
       <select v-model="filterRole" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Chọn Vai trò --</option>
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
@@ -259,7 +256,6 @@ onMounted(() => {
           {{ permission.title }}
         </option>
       </select>
-      <input v-model="filterKeyword" class="form-control" style="flex: 0 0 250px;" placeholder="Tìm theo tên vai trò, tên quyền..." @keyup.enter="handleSearch" />
       <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
         <i class="fas fa-search"></i> Tìm kiếm
       </button>

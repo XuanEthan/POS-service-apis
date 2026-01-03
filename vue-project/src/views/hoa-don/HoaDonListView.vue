@@ -1,11 +1,15 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { canAccessModule } from '@/utils/auth'
+import { canAccessModule, canDoAction } from '@/utils/auth'
 import PermissionAlert from '@/components/PermissionAlert.vue'
-import { MODULE_LABELS } from '@/constants/permissions'
+import { MODULE_LABELS, FEATURE_PERMISSIONS } from '@/constants/permissions'
 
 // Kiểm tra quyền truy cập module hóa đơn (bất kỳ quyền nào: list, add, edit, delete)
 const canAccessModule_hoadon = computed(() => canAccessModule('hoadon'))
+const canSearch_hoadon = computed(() => {
+  const hasSearchAction = !!FEATURE_PERMISSIONS.hoadon?.search
+  return hasSearchAction ? canDoAction('hoadon', 'search') : canDoAction('hoadon', 'list')
+})
 
 const loading = ref(false)
 const error = ref('')
@@ -87,7 +91,7 @@ function fetchInvoices() {
     </div>
 
     <!-- Filters -->
-    <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+    <div v-if="canSearch_hoadon" class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
       <select v-model="filterProvince" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Tỉnh/Thành phố --</option>
       </select>

@@ -2,8 +2,12 @@ import { get, post, put, del } from './api'
 
 const ENDPOINT = '/User/users'
 
-export async function getUsers() {
-  return await get(ENDPOINT)
+export async function getUsers(params) {
+  let queryString = ''
+  if(params != null){
+     queryString = new URLSearchParams(params).toString()
+  }
+  return await get(`${ENDPOINT}?${queryString}`)
 }
 
 export async function getUserById(id) {

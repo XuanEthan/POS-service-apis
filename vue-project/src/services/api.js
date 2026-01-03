@@ -202,10 +202,22 @@ export async function get(endpoint) {
 }
 
 // POST request
-export async function post(endpoint, body) {
+export async function post(endpoint, body, headers = {}) {
+  let bodyToSend = body
+  const contentType = headers['Content-Type'] || (headers['content-type'] || '')
+
+  // If caller didn't specify content-type and body is an object, send JSON
+  if (!contentType) {
+    bodyToSend = JSON.stringify(body)
+    headers['Content-Type'] = 'application/json'
+  } else if (contentType.includes('application/json')) {
+    bodyToSend = JSON.stringify(body)
+  }
+
   return request(endpoint, {
     method: 'POST',
-    body: JSON.stringify(body)
+    headers,
+    body: bodyToSend
   })
 }
 
