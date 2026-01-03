@@ -1,13 +1,15 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { getUsers, deleteUser, createUser, updateUser } from '@/services/userService'
 import { getRoles } from '@/services/roleService'
 import UserModal from '@/components/UserModal.vue'
 import PermissionAlert from '@/components/PermissionAlert.vue'
 import { canAccessModule, canDoAction } from '@/utils/auth'
-import { MODULE_LABELS } from '@/constants/permissions'
+import { MODULE_LABELS, FEATURE_PERMISSIONS } from '@/constants/permissions'
+import uuid from '@/utils/uuid'
 
 const filterRole = ref('')
+const filterStatus = ref('')
 const filterKeyword = ref('')
 const checkAll = ref(false)
 const perPage = ref(10)
@@ -17,6 +19,11 @@ const error = ref('')
 
 const users = ref([])
 const roles = ref([])
+
+// Server-side total count
+const totalItemsServer = ref(0)
+// Whether user has performed a search (only then fetch/paginate)
+const hasSearched = ref(false)
 
 // Modal state
 const showModal = ref(false)
@@ -29,19 +36,37 @@ const canAdd = computed(() => canDoAction('user', 'add'))
 const canEdit = computed(() => canDoAction('user', 'edit'))
 const canView = computed(() => canDoAction('user', 'view'))
 const canDelete = computed(() => canDoAction('user', 'delete'))
+const canSearch_user = computed(() => {
+  const hasSearchAction = !!FEATURE_PERMISSIONS.user?.search
+  return hasSearchAction ? canDoAction('user', 'search') : canDoAction('user', 'list')
+})
 
-// Fetch users từ API
+// Fetch users từ API (server-side filtering & pagination)
 async function fetchUsers() {
   loading.value = true
   error.value = ''
   try {
-    const response = await getUsers()
-    console.log('API response for getUsers:', response)
+    const params = {
+      Search: filterKeyword.value || '',
+      RoleId: filterRole.value || uuid.EMPTY_GUID,
+      StatusId: filterStatus.value || 0,
+    }
+    const response = await getUsers(params)
+    // console.log('API response for getUsers:', params)
     if (response.isSuccess) {
-      users.value = response.object || []
-      console.log('Fetched users:', users.value)
+      // Support both shapes: array or { items: [], totalCount }
+      if (response.object && Array.isArray(response.object)) {
+        users.value = response.object || []
+        totalItemsServer.value = users.value.length
+      } else if (response.object && response.object.items) {
+        users.value = response.object.items || []
+        totalItemsServer.value = response.object.totalCount || users.value.length
+      } else {
+        users.value = response.object || []
+        totalItemsServer.value = users.value.length
+      }
     } else {
-      if(response.code === 403){
+      if (response.code === 403) {
         error.value = `❌ Truy cập bị từ chối! Bạn không có quyền xem danh sách "${MODULE_LABELS.user || 'người dùng'}". Vui lòng liên hệ quản trị viên.`
         return
       }
@@ -163,34 +188,16 @@ function statusBadgeClass(statusId) {
   }
 }
 
-// Lọc users theo model User: UserId, UserName, Password, RoleId, RoleCode
-const filteredUsers = computed(() => {
-  const q = filterKeyword.value.trim().toLowerCase()
-
-  return users.value.filter(u => {
-    const okQ = !q ||
-      (u.userName && u.userName.toLowerCase().includes(q)) ||
-      (u.roleCode && u.roleCode.toLowerCase().includes(q))
-    const okRole = !filterRole.value || u.roleId === filterRole.value
-    return okQ && okRole
-  })
-})
-
-// Pagination computed values
-const totalItems = computed(() => filteredUsers.value.length)
+// Server-side pagination computed values
+const totalItems = computed(() => totalItemsServer.value)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / Number(perPage.value || 1))))
 
-// Ensure currentPage is within bounds when filters or perPage change
-import { watch } from 'vue'
-watch([filteredUsers, perPage], () => {
-  if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
+// Ensure we refetch when page or pageSize change
+watch([perPage, currentPage], () => {
   if (currentPage.value < 1) currentPage.value = 1
-})
-
-const pagedUsers = computed(() => {
-  const p = Number(perPage.value || 10)
-  const start = (Number(currentPage.value || 1) - 1) * p
-  return filteredUsers.value.slice(start, start + p)
+  if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
+  // Only fetch when user already initiated a search
+  if (hasSearched.value) fetchUsers()
 })
 
 function prevPage() {
@@ -216,7 +223,10 @@ function handleCheckAll() {
 }
 
 function handleSearch() {
-  // Trigger filter - computed sẽ tự động cập nhật
+  if (!canSearch_user.value) return
+  currentPage.value = 1
+  hasSearched.value = true
+  fetchUsers()
 }
 
 // Load dữ liệu khi component mount
@@ -243,15 +253,22 @@ onMounted(() => {
     </div>
 
     <!-- Filters -->
-    <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
-      <select v-model="filterRole" class="form-control" style="flex: 0 0 160px;">
-        <option value="">-- Vai trò --</option>
+    <div v-if="canSearch_user" class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+      <select v-model="filterStatus" class="form-control" style="flex: 0 0 140px;">
+        <option value="">-- Trạng thái --</option>
+        <option value="1">Đã kích hoạt</option>
+        <option value="2">Chưa kích hoạt</option>
+        <option value="3">Khóa</option>
+      </select>
+      
+      <select v-model="filterRole" class="form-control" style="flex: 0 0 140px;">
+        <option value="">-- Tên vai trò --</option>
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
           {{ role.title }}
         </option>
       </select>
-      <input v-model="filterKeyword" class="form-control" style="flex: 1;"
-        placeholder="Tìm theo tên đăng nhập, mã vai trò..." @keyup.enter="handleSearch" />
+      <input v-model="filterKeyword" class="form-control" style="flex: 0 0 250px;"
+        placeholder="Tìm theo tên đăng nhập" @keyup.enter="handleSearch" />
       <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
         <i class="fas fa-search"></i> Tìm kiếm
       </button>
@@ -285,10 +302,10 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-if="filteredUsers.length === 0">
+            <tr v-if="users.length === 0">
               <td colspan="7" class="text-center">Không có dữ liệu</td>
             </tr>
-            <tr v-for="(user, index) in pagedUsers" :key="user.userId">
+            <tr v-for="(user, index) in users" :key="user.userId">
               <td class="col-check"><input type="checkbox" /></td>
               <td class="col-stt">{{ (Number(currentPage) - 1) * Number(perPage) + index + 1 }}</td>
               <td>{{ user.userName }}</td>
@@ -320,7 +337,7 @@ onMounted(() => {
 
     <!-- Table Footer -->
     <div class="table-footer" v-if="!error && !loading">
-        <div class="perpage">
+      <div class="perpage">
         <label>Hiển thị</label>
         <select v-model="perPage">
           <option :value="10">10</option>

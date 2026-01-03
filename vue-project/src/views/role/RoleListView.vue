@@ -7,6 +7,7 @@ import TreeView from '@/components/TreeView.vue'
 import RoleModal from '@/components/RoleModal.vue'
 import PermissionAlert from '@/components/PermissionAlert.vue'
 import { canAccessModule, canDoAction } from '@/utils/auth'
+import { MODULE_LABELS } from '@/constants/permissions'
 
 const filterKeyword = ref('')
 const loading = ref(false)
@@ -35,6 +36,10 @@ async function fetchRoles() {
     if (response.isSuccess) {
       roles.value = response.object || []
     } else {
+      if(response.code === 403){
+        error.value = `❌ Truy cập bị từ chối! Bạn không có quyền xem danh sách "${MODULE_LABELS.role || 'vai trò'}". Vui lòng liên hệ quản trị viên.`
+        return
+      }
       error.value = response.message || 'Không thể tải danh sách vai trò'
     }
   } catch (e) {
@@ -188,12 +193,7 @@ onMounted(() => {
       <button class="btn btn-secondary" @click="fetchRoles">🔄 Tải lại</button>
     </div>
 
-    <!-- Filters -->
     <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
-      <input v-model="filterKeyword" class="form-control" style="flex: 1; max-width: 400px;" placeholder="Tìm theo mã hoặc tên vai trò..." />
-      <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;">
-        <i class="fas fa-search"></i> Tìm kiếm
-      </button>
       <div style="flex: 1;"></div>
       <div class="tree-stats" style="flex: 0 0 auto; font-size: 12px; color: #666;">
         Tổng: <strong>{{ roles.length }}</strong> vai trò
@@ -210,7 +210,7 @@ onMounted(() => {
     </div>
 
     <!-- Tree View -->
-    <div class="page-content" v-if="!loading">
+    <div class="page-content" v-if="!loading && !error">
       <TreeView
         :items="roles"
         id-key="roleId"

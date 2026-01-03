@@ -2,9 +2,12 @@ import { get, post, put, del } from './api'
 
 const ENDPOINT = '/RolePermission/rolepermissions'
 
-export async function getRolePermissions(roleId = null) {
-  const params = roleId ? `?roleId=${roleId}` : ''
-  return await get(`${ENDPOINT}${params}`)
+export async function getRolePermissions(filters) {
+  let qs = ''
+  if(filters !=null){
+    qs = new URLSearchParams(filters).toString()
+  }
+  return await get(`${ENDPOINT}?${qs}`)
 }
 
 export async function getRolePermissionById(id) {

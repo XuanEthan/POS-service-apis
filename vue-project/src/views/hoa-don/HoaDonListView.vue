@@ -1,10 +1,18 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { canAccessModule } from '@/utils/auth'
+import { canAccessModule, canDoAction } from '@/utils/auth'
 import PermissionAlert from '@/components/PermissionAlert.vue'
+import { MODULE_LABELS, FEATURE_PERMISSIONS } from '@/constants/permissions'
 
 // Kiểm tra quyền truy cập module hóa đơn (bất kỳ quyền nào: list, add, edit, delete)
 const canAccessModule_hoadon = computed(() => canAccessModule('hoadon'))
+const canSearch_hoadon = computed(() => {
+  const hasSearchAction = !!FEATURE_PERMISSIONS.hoadon?.search
+  return hasSearchAction ? canDoAction('hoadon', 'search') : canDoAction('hoadon', 'list')
+})
+
+const loading = ref(false)
+const error = ref('')
 
 const invoices = ref([
   { id: 'INV-001', customer: 'Cửa hàng A', date: '2025-11-05', due: '2025-12-05', amount: 980000, status: 'paid' },
@@ -52,6 +60,13 @@ function getBadgeText(status) {
 function handleCheckAll() {
   // Handle check all logic
 }
+
+// Tải lại danh sách hóa đơn
+function fetchInvoices() {
+  // Mô phỏng: trong thực tế sẽ gọi API
+  // Ở đây chỉ reset error state
+  error.value = ''
+}
 </script>
 
 <template>
@@ -67,6 +82,7 @@ function handleCheckAll() {
     <!-- Toolbar -->
     <div class="page-toolbar">
       <button class="btn btn-primary"><span>+</span> Thêm mới</button>
+      <button class="btn btn-secondary" @click="fetchInvoices">🔄 Tải lại</button>
       <!-- <button class="btn btn-danger">Xóa vĩnh viễn</button>
       <button class="btn btn-warning">Xóa tạm</button>
       <button class="btn btn-info">Khôi phục</button>
@@ -75,32 +91,42 @@ function handleCheckAll() {
     </div>
 
     <!-- Filters -->
-    <div class="page-filters cols-6">
-      <select v-model="filterProvince" class="form-control">
-        <option value="">-- Chọn Tỉnh/Thành phố --</option>
+    <div v-if="canSearch_hoadon" class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+      <select v-model="filterProvince" class="form-control" style="flex: 0 0 140px;">
+        <option value="">-- Tỉnh/Thành phố --</option>
       </select>
-      <select v-model="filterDistrict" class="form-control">
-        <option value="">-- Chọn Quận/Huyện --</option>
+      <select v-model="filterDistrict" class="form-control" style="flex: 0 0 140px;">
+        <option value="">-- Quận/Huyện --</option>
       </select>
-      <select v-model="filterWard" class="form-control">
-        <option value="">-- Chọn Xã/Phường --</option>
+      <select v-model="filterWard" class="form-control" style="flex: 0 0 140px;">
+        <option value="">-- Xã/Phường --</option>
       </select>
-      <select v-model="filterStatus" class="form-control">
+      <select v-model="filterStatus" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Chọn Trạng thái --</option>
         <option value="all">Tất cả</option>
         <option value="paid">Đã thanh toán</option>
         <option value="due">Chưa thanh toán</option>
         <option value="over">Quá hạn</option>
       </select>
-      <div class="input-group">
-        <input v-model="filterKeyword" class="form-control" placeholder="Nhập từ khóa tìm kiếm..." />
-        <button class="btn btn-primary">Tìm kiếm</button>
-      </div>
+      <input v-model="filterKeyword" class="form-control" style="flex: 0 0 250px;" placeholder="Nhập từ khóa tìm kiếm..." />
+      <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;">Tìm kiếm</button>
     </div>
 
     <!-- Table -->
     <div class="page-content">
-      <table class="data-table">
+      <!-- Loading -->
+      <div v-if="loading" class="loading-indicator">
+        <span>Đang tải dữ liệu...</span>
+      </div>
+
+      <!-- Error Message -->
+      <div v-else-if="error" class="error-message">
+        <span>{{ error }}</span>
+        <button class="btn btn-sm btn-primary" @click="fetchInvoices">Thử lại</button>
+      </div>
+
+      <!-- Table Data -->
+      <table v-else class="data-table">
         <thead>
           <tr>
             <th class="col-check"><input type="checkbox" v-model="checkAll" @change="handleCheckAll" /></th>
@@ -115,6 +141,9 @@ function handleCheckAll() {
           </tr>
         </thead>
         <tbody>
+          <tr v-if="filteredInvoices.length === 0">
+            <td colspan="9" class="text-center">Không có dữ liệu</td>
+          </tr>
           <tr v-for="(invoice, index) in filteredInvoices" :key="invoice.id">
             <td class="col-check"><input type="checkbox" /></td>
             <td class="col-stt">{{ index + 1 }}</td>
@@ -163,19 +192,20 @@ function handleCheckAll() {
 </template>
 
 <style scoped>
-.page-filters.cols-6 {
-  grid-template-columns: repeat(4, 1fr) 2fr;
+.loading-indicator {
+  padding: 20px;
+  text-align: center;
+  color: #666;
 }
 
-@media (max-width: 1200px) {
-  .page-filters.cols-6 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .page-filters.cols-6 {
-    grid-template-columns: 1fr;
-  }
+.error-message {
+  padding: 15px 20px;
+  background: #ffe6e6;
+  color: #c00;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 20px;
+  border-radius: 4px;
 }
 </style>

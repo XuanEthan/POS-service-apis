@@ -6,10 +6,11 @@ import { getPermissions } from '@/services/permissionService'
 import RolePermissionModal from '@/components/RolePermissionModal.vue'
 import PermissionAlert from '@/components/PermissionAlert.vue'
 import { canAccessModule, canDoAction } from '@/utils/auth'
+import { MODULE_LABELS, FEATURE_PERMISSIONS } from '@/constants/permissions'
+import uuid from '@/utils/uuid'
 
 const filterRole = ref('')
 const filterPermission = ref('')
-const filterStatus = ref('')
 const checkAll = ref(false)
 const perPage = ref(10)
 const loading = ref(false)
@@ -30,16 +31,24 @@ const canAdd = computed(() => canDoAction('rolePermission', 'add'))
 const canEdit = computed(() => canDoAction('rolePermission', 'edit'))
 const canView = computed(() => canDoAction('rolePermission', 'view'))
 const canDelete = computed(() => canDoAction('rolePermission', 'delete'))
+const canSearch_rolePermission = computed(() => {
+  const hasSearchAction = !!FEATURE_PERMISSIONS.rolePermission?.search
+  return hasSearchAction ? canDoAction('rolePermission', 'search') : canDoAction('rolePermission', 'list')
+})
 
-// Fetch role permissions từ API
-async function fetchRolePermissions() {
+// Fetch role permissions từ API (supports server-side filters)
+async function fetchRolePermissions(filters = {}) {
   loading.value = true
   error.value = ''
   try {
-    const response = await getRolePermissions()
+    const response = await getRolePermissions(filters)
     if (response.isSuccess) {
       rolePermissions.value = response.object || []
     } else {
+      if(response.code === 403){
+        error.value = `❌ Truy cập bị từ chối! Bạn không có quyền xem danh sách "${MODULE_LABELS.rolePermission || 'phân quyền'}". Vui lòng liên hệ quản trị viên.`
+        return
+      }
       error.value = response.message || 'Không thể tải danh sách phân quyền'
     }
   } catch (e) {
@@ -171,14 +180,9 @@ function getStatusClass(statusId) {
   return 'badge badge-secondary'
 }
 
-// Lọc role permissions
+// Server-side filtered role permissions (frontend simply shows returned list)
 const filteredRolePermissions = computed(() => {
-  return rolePermissions.value.filter(rp => {
-    const okRole = !filterRole.value || rp.roleId === filterRole.value
-    const okPermission = !filterPermission.value || rp.permissionId === filterPermission.value
-    const okStatus = !filterStatus.value || String(rp.statusId) === filterStatus.value
-    return okRole && okPermission && okStatus
-  })
+  return rolePermissions.value
 })
 
 // Gom permissions theo từng Role
@@ -206,8 +210,12 @@ function handleCheckAll() {
   // Handle check all logic
 }
 
-function handleSearch() {
-  // Trigger filter - computed sẽ tự động cập nhật
+async function handleSearch() {
+  if (!canSearch_rolePermission.value) return
+  const filters = {}
+  if (filterRole.value) filters.roleId = filterRole.value || uuid.EMPTY_GUID
+  if (filterPermission.value) filters.permissionId = filterPermission.value || uuid.EMPTY_GUID
+  await fetchRolePermissions(filters)
 }
 
 // Load dữ liệu khi component mount
@@ -230,28 +238,23 @@ onMounted(() => {
 
     <!-- Toolbar -->
     <div class="page-toolbar">
-      <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Thêm phân quyền</button>
+      <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Phân quyền</button>
       <button class="btn btn-secondary" @click="fetchRolePermissions">🔄 Tải lại</button>
     </div>
 
     <!-- Filters -->
-    <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
-      <select v-model="filterRole" class="form-control" style="flex: 1; min-width: 150px;">
+    <div v-if="canSearch_rolePermission" class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+      <select v-model="filterRole" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Chọn Vai trò --</option>
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
           {{ role.title }}
         </option>
       </select>
-      <select v-model="filterPermission" class="form-control" style="flex: 1; min-width: 150px;">
+      <select v-model="filterPermission" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Chọn Quyền --</option>
         <option v-for="permission in permissions" :key="permission.permissionId" :value="permission.permissionId">
           {{ permission.title }}
         </option>
-      </select>
-      <select v-model="filterStatus" class="form-control" style="flex: 0 0 140px;">
-        <option value="">-- Trạng thái --</option>
-        <option value="1">Hoạt động</option>
-        <option value="0">Không hoạt động</option>
       </select>
       <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
         <i class="fas fa-search"></i> Tìm kiếm
@@ -268,7 +271,7 @@ onMounted(() => {
     </div>
 
     <!-- Table -->
-    <div class="page-content" v-if="!loading">
+    <div class="page-content" v-if="!loading && !error">
       <div class="table-responsive">
         <table class="data-table">
           <thead>
