@@ -79,6 +79,7 @@ builder.Services.AddTransient<RolePermissionService>();
 builder.Services.AddTransient<PermissionService>();
 builder.Services.AddTransient<RoleService>();
 builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<SanphamService>();
 
 builder.Services.AddCors(options =>
 {
