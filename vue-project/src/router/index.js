@@ -5,8 +5,9 @@ import { isAuthenticated, canAccessRoute } from '@/utils/auth'
 import DashboardView from '@/views/DashboardView.vue'
 import HoaDonListView from '@/views/hoa-don/HoaDonListView.vue'
 import NguoiDungListView from '@/views/nguoi-dung/NguoiDungListView.vue'
+import SanPhamListView from '@/views/san-pham/SanPhamListView.vue'
 import ThanhToanView from '@/views/thanh-toan/ThanhToanView.vue'
-import ThongKeView from '@/views/thong-ke/ThongKeView.vue'
+import ReportsView from '@/views/reports/ReportsView.vue'
 import RoleListView from '@/views/role/RoleListView.vue'
 import PermissionListView from '@/views/permission/PermissionListView.vue'
 import RolePermissionListView from '@/views/role-permission/RolePermissionListView.vue'
@@ -41,16 +42,22 @@ const router = createRouter({
       meta: { title: 'Quản lý người dùng', requiresAuth: true }
     },
     {
-      path: '/order-thuchi',
-      name: 'order-thuchi',
-      component: ThanhToanView,
-      meta: { title: 'Order/Tính tiền', requiresAuth: true }
+      path: '/san-pham',
+      name: 'san-pham',
+      component: SanPhamListView,
+      meta: { title: 'Quản lý sản phẩm', requiresAuth: true }
     },
     {
-      path: '/thong-ke',
-      name: 'thong-ke',
-      component: ThongKeView,
-      meta: { title: 'Thống kê', requiresAuth: true }
+      path: '/ban-hang',
+      name: 'ban-hang',
+      component: ThanhToanView,
+      meta: { title: 'Quản lý bán hàng', requiresAuth: true }
+    },
+    {
+      path: '/reports',
+      name: 'reports',
+      component: ReportsView,
+      meta: { title: 'Báo cáo', requiresAuth: true }
     },
     {
       path: '/role',

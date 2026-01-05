@@ -4,8 +4,8 @@ import PermissionAlert from '@/components/PermissionAlert.vue'
 import { hasPermission } from '@/utils/auth'
 import { PERMISSIONS } from '@/constants/permissions'
 
-// Kiểm tra quyền xem chức năng order/thức tiền (có quyền ORDER_THUCHI)
-const canAccessModule_orderThuchi = computed(() => hasPermission(PERMISSIONS.ORDER_THUCHI))
+// Kiểm tra quyền xem chức năng quản lý bán hàng
+const canAccessModule_orderThuchi = computed(() => hasPermission(PERMISSIONS.BANHANG))
 
 const orderItems = ref([
   { id: 1, name: 'Coca Cola', quantity: 3, price: 15000, total: 45000, user: 'admin' },

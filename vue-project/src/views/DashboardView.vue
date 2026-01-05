@@ -20,13 +20,14 @@ function checkRouteAccess(routePath) {
 }
 
 // Kiểm tra quyền cho từng quick action
-const canAccessOrderThuchi = computed(() => checkRouteAccess('/order-thuchi'))
+const canAccessOrderThuchi = computed(() => checkRouteAccess('/ban-hang'))
 const canAccessHoaDon = computed(() => checkRouteAccess('/hoa-don'))
-const canAccessThongKe = computed(() => checkRouteAccess('/thong-ke'))
+const canAccessThongKe = computed(() => checkRouteAccess('/reports'))
 const canAccessNguoiDung = computed(() => checkRouteAccess('/nguoi-dung'))
 const canAccessRole = computed(() => checkRouteAccess('/role'))
 const canAccessPermission = computed(() => checkRouteAccess('/permission'))
 const canAccessRolePermission = computed(() => checkRouteAccess('/role-permission'))
+const canAccessSanPham = computed(() => checkRouteAccess('/san-pham'))
 
 // Kiểm tra có quick action nào để hiển thị không
 const hasAnyQuickAction = computed(() => 
@@ -36,7 +37,8 @@ const hasAnyQuickAction = computed(() =>
   canAccessNguoiDung.value || 
   canAccessRole.value || 
   canAccessPermission.value || 
-  canAccessRolePermission.value
+  canAccessRolePermission.value ||
+  canAccessSanPham.value
 )
 </script>
 
@@ -89,17 +91,21 @@ const hasAnyQuickAction = computed(() =>
       <div class="quick-actions-section" v-if="hasAnyQuickAction">
         <h2 class="section-title">Truy cập nhanh</h2>
         <div class="actions-grid">
-          <RouterLink v-if="canAccessOrderThuchi" to="/order-thuchi" class="action-card action-primary">
+          <RouterLink v-if="canAccessSanPham" to="/san-pham" class="action-card action-orange">
+            <i class="fas fa-box action-icon"></i>
+            <span class="action-text">Sản phẩm</span>
+          </RouterLink>
+          <RouterLink v-if="canAccessOrderThuchi" to="/ban-hang" class="action-card action-primary">
             <i class="fas fa-credit-card action-icon"></i>
-            <span class="action-text">Order/Tính tiền</span>
+            <span class="action-text">Quản lý bán hàng</span>
           </RouterLink>
           <RouterLink v-if="canAccessHoaDon" to="/hoa-don" class="action-card action-info">
             <i class="fas fa-file-invoice action-icon"></i>
             <span class="action-text">Hóa đơn</span>
           </RouterLink>
-          <RouterLink v-if="canAccessThongKe" to="/thong-ke" class="action-card action-teal">
+          <RouterLink v-if="canAccessThongKe" to="/reports" class="action-card action-teal">
             <i class="fas fa-chart-bar action-icon"></i>
-            <span class="action-text">Thống kê</span>
+            <span class="action-text">Báo cáo</span>
           </RouterLink>
           <RouterLink v-if="canAccessNguoiDung" to="/nguoi-dung" class="action-card action-success">
             <i class="fas fa-user action-icon"></i>
@@ -233,6 +239,7 @@ const hasAnyQuickAction = computed(() =>
 
 .action-primary { background: #3498db; }
 .action-info { background: #17a2b8; }
+.action-orange { background: #e67e22; }
 .action-success { background: #27ae60; }
 .action-warning { background: #f39c12; }
 .action-purple { background: #9b59b6; }

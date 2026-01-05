@@ -48,9 +48,10 @@ function checkRouteAccess(routePath) {
 // Kiểm tra quyền cho từng menu item (reactive)
 const menuPermissions = computed(() => ({
   // Bán hàng
+  sanpham: checkRouteAccess('/san-pham'),
   hoadon: checkRouteAccess('/hoa-don'),
-  orderThuchi: checkRouteAccess('/order-thuchi'),
-  thongke: checkRouteAccess('/thong-ke'),
+  orderThuchi: checkRouteAccess('/ban-hang'),
+  thongke: checkRouteAccess('/reports'),
   // Quản trị
   nguoidung: checkRouteAccess('/nguoi-dung'),
   role: checkRouteAccess('/role'),
@@ -130,17 +131,21 @@ onUnmounted(() => {
           <i class="fas fa-tachometer-alt nav-icon"></i>
           <span class="nav-label">Tổng quan</span>
         </RouterLink>
+        <RouterLink v-if="menuPermissions.sanpham" to="/san-pham" class="nav-item" title="Sản phẩm">
+          <i class="fas fa-box nav-icon"></i>
+          <span class="nav-label">Sản phẩm</span>
+        </RouterLink>
         <RouterLink v-if="menuPermissions.hoadon" to="/hoa-don" class="nav-item" title="Hóa đơn">
           <i class="fas fa-file-invoice nav-icon"></i>
           <span class="nav-label">Hóa đơn</span>
         </RouterLink>
-        <RouterLink v-if="menuPermissions.orderThuchi" to="/order-thuchi" class="nav-item" title="Order/Tính tiền">
+        <RouterLink v-if="menuPermissions.orderThuchi" to="/ban-hang" class="nav-item" title="Quản lý bán hàng">
           <i class="fas fa-credit-card nav-icon"></i>
-          <span class="nav-label">Order/Tính tiền</span>
+          <span class="nav-label">Quản lý bán hàng</span>
         </RouterLink>
-        <RouterLink v-if="menuPermissions.thongke" to="/thong-ke" class="nav-item" title="Thống kê">
+        <RouterLink v-if="menuPermissions.thongke" to="/reports" class="nav-item" title="Báo cáo">
           <i class="fas fa-chart-bar nav-icon"></i>
-          <span class="nav-label">Thống kê</span>
+          <span class="nav-label">Báo cáo</span>
         </RouterLink>
       </div>
 
