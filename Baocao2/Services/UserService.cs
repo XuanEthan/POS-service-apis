@@ -4,7 +4,7 @@ namespace Baocao2.Services
 {
     public class UserService
     {
-        public IEnumerable<Vw_User> GetVwListQuery() // join tu code thay vi
+        public IEnumerable<Vw_User> GetVwListQuery(User_Search? filter) // join tu code thay vi
         {
             var query =
                 from u in Users.UserList
@@ -29,12 +29,27 @@ namespace Baocao2.Services
                     DateCreated = u.DateCreated,
                     DateEdited = u.DateEdited
                 };
+            if(filter != null)
+            {
+                if(filter.StatusId > 0)
+                {
+                    query = query.Where(q => q.StatusId == filter.StatusId);
+                }
+                if(filter.RoleId != Guid.Empty)
+                {
+                    query = query.Where(q => q.RoleId == filter.RoleId);
+                }
+                if(!string.IsNullOrEmpty(filter.Search))
+                {
+                    query = query.Where(q => q.UserName.Contains(filter.Search));
+                }
+            }
             return query;
         }
 
-        public ResultModel GetVwList()
+        public ResultModel GetVwList(User_Search? filter)
         {
-            var query = GetVwListQuery();
+            var query = GetVwListQuery(filter);
             var res = query.ToList();
             return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = ResultModel.BuildMessage(ResultModel.ResultCode.Ok), Id = null, Object = res };
         }

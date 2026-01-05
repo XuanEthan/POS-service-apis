@@ -21,9 +21,9 @@ namespace Baocao2.Controllers
 
         [HttpGet("rolepermissions")]
         [ActionFilter(PERMISSION_FIX.Role_Permisstion_LIST)]
-        public ResultModel GetList([FromQuery] string? roleId)
+         public ResultModel GetList([FromQuery] RolePermission_Search rolePermission_Search)
         {
-            return _rolePermissionService.GetList(roleId);
+            return _rolePermissionService.GetList(rolePermission_Search);
         }
 
         [HttpGet("rolepermissions/{id}")]

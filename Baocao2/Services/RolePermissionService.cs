@@ -4,19 +4,27 @@ namespace Baocao2.Services
 {
     public class RolePermissionService
     {
-        public IEnumerable<RolePermission> GetListQuery(string? roleId)
+        public IEnumerable<RolePermission> GetListQuery(RolePermission_Search? filter)
         {
             var query = RolePermissions.List.Where(rp=>rp.RoleId.ToString() != Role_Fix.ADMIN && rp.IsDelete != IsDelete.Xoa).AsEnumerable();
-            if (!string.IsNullOrEmpty(roleId))
+           if(filter != null)
             {
-                query = query.Where(rp => Guid.Equals(rp.RoleId, Guid.Parse(roleId)));
+                if (filter.RoleId != Guid.Empty)
+                {
+                 query = query.Where(rp => rp.RoleId == filter.RoleId);
+                }
+                if (filter.PermissionId != Guid.Empty)
+                {
+                    query = query.Where(rp => rp.PermissionId == filter.PermissionId);
+                }
             }
+
             return query;
         }
 
-        public ResultModel GetList(string? roleId)
+        public ResultModel GetList(RolePermission_Search? filter)
         {
-            var query = GetListQuery(roleId);
+            var query = GetListQuery(filter);
             var res = query.ToList();
             return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = ResultModel.BuildMessage(ResultModel.ResultCode.Ok), Id = null, Object = res };
         }
