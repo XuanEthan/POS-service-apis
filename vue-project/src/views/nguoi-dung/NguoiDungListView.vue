@@ -294,11 +294,11 @@ onMounted(() => {
             <tr>
               <th class="col-check"><input type="checkbox" v-model="checkAll" @change="handleCheckAll" /></th>
               <th class="col-stt">STT</th>
+              <th class="col-action">Thao tác</th>
               <th>Tên đăng nhập</th>
               <th>Mật khẩu</th>
               <th>Vai trò</th>
               <th>Trạng thái</th>
-              <th class="col-action">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -308,6 +308,17 @@ onMounted(() => {
             <tr v-for="(user, index) in users" :key="user.userId">
               <td class="col-check"><input type="checkbox" /></td>
               <td class="col-stt">{{ (Number(currentPage) - 1) * Number(perPage) + index + 1 }}</td>
+              <td class="col-action">
+                <div class="dropdown" v-if="canEdit || canView || canDelete">
+                  <button class="row-action-btn">⚙</button>
+                  <div class="dropdown-menu">
+                    <a v-if="canView" class="dropdown-item" @click="openViewModal(user)">👁️ Xem chi tiết</a>
+                    <a v-if="canEdit" class="dropdown-item" @click="openEditModal(user)">✏️ Sửa</a>
+                    <div v-if="canDelete && (canEdit || canView)" class="dropdown-divider"></div>
+                    <a v-if="canDelete" class="dropdown-item" @click="handleDelete(user.userId)">🗑️ Xóa</a>
+                  </div>
+                </div>
+              </td>
               <td>{{ user.userName }}</td>
               <td>********</td>
               <td>
@@ -317,17 +328,6 @@ onMounted(() => {
               </td>
               <td>
                 <span class="badge" :class="statusBadgeClass(user.statusId)">{{ getStatusText(user.statusId) }}</span>
-              </td>
-              <td class="col-action">
-                <div class="dropdown" v-if="canEdit || canView || canDelete">
-                  <button class="row-action-btn">⚙</button>
-                  <div class="dropdown-menu">
-                    <a v-if="canEdit" class="dropdown-item" @click="openEditModal(user)">✏️ Sửa</a>
-                    <a v-if="canView" class="dropdown-item" @click="openViewModal(user)">👁️ Xem chi tiết</a>
-                    <div v-if="canDelete && (canEdit || canView)" class="dropdown-divider"></div>
-                    <a v-if="canDelete" class="dropdown-item" @click="handleDelete(user.userId)">🗑️ Xóa</a>
-                  </div>
-                </div>
               </td>
             </tr>
           </tbody>
