@@ -65,18 +65,18 @@ const router = createRouter({
       component: RoleListView,
       meta: { title: 'Quản lý vai trò', requiresAuth: true }
     },
-    {
-      path: '/permission',
-      name: 'permission',
-      component: PermissionListView,
-      meta: { title: 'Quản lý quyền', requiresAuth: true }
-    },
-    {
-      path: '/role-permission',
-      name: 'role-permission',
-      component: RolePermissionListView,
-      meta: { title: 'Quản lý phân quyền', requiresAuth: true }
-    },
+    // {
+    //   path: '/permission',
+    //   name: 'permission',
+    //   component: PermissionListView,
+    //   meta: { title: 'Quản lý quyền', requiresAuth: true }
+    // },
+    // {
+    //   path: '/role-permission',
+    //   name: 'role-permission',
+    //   component: RolePermissionListView,
+    //   meta: { title: 'Quản lý phân quyền', requiresAuth: true }
+    // },
     {
       path: '/forbidden',
       name: 'forbidden',

@@ -1,6 +1,6 @@
 import { get, post, put, del } from './api'
 
-const ENDPOINT = '/Sanpham/sanphams'
+const ENDPOINT = '/Sanphams'
 
 export async function getSanphams(params) {
   let queryString = ''

@@ -109,8 +109,8 @@ function openCreateModal() {
     unitOfMeasure: 'pcs',
     stockOnHand: 0,
     active: null,
-    createdAt : null,
-    updatedAt : null,
+    createdAt: null,
+    updatedAt: null,
   }
   modalMode.value = 'create'
   showModal.value = true
@@ -121,7 +121,7 @@ async function openEditModal(product) {
     alert('Bạn không có quyền sửa sản phẩm')
     return
   }
-  
+
   try {
     const response = await getSanphamById(product.sanphamId || product.SanphamId)
     if (response.isSuccess && response.object) {
@@ -141,7 +141,7 @@ async function openViewModal(product) {
     alert('Bạn không có quyền xem chi tiết sản phẩm')
     return
   }
-  
+
   try {
     const response = await getSanphamById(product.sanphamId || product.SanphamId)
     if (response.isSuccess && response.object) {
@@ -235,118 +235,130 @@ onMounted(() => {
     <PermissionAlert v-if="!canAccessModule_sanpham" :moduleName="MODULE_LABELS.sanpham" />
 
     <template v-else>
-      <!-- Page Header -->
-      <div class="page-header">
-        <h1 class="page-title"><i class="fas fa-box"></i> QUẢN LÝ SẢN PHẨM</h1>
+      <div class="page-header-toolbar">
+        <div class="page-header">
+          <h1 class="page-title"><i class="fas fa-box"></i> QUẢN LÝ SẢN PHẨM</h1>
+        </div>
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Thêm mới</button>
+            <button class="btn btn-secondary" @click="refreshData" :disabled="loading">🔄 {{ loading ? 'Đang tải...' :
+              'Tải lại' }}</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Toolbar -->
-      <div class="page-toolbar">
-      <div class="toolbar-left">
-        <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Thêm mới</button>
-        <button class="btn btn-secondary" @click="refreshData" :disabled="loading">🔄 {{ loading ? 'Đang tải...' : 'Tải lại' }}</button>
-      </div>
-      <!-- <div class="toolbar-right">
-        <button class="btn btn-success">📊 Xuất Excel</button>
-      </div> -->
-    </div>
-
-    <!-- Filters -->
-    <div v-if="canSearch" class="page-filters">
-      <div class="input-group">
-        <input type="text" v-model="searchKeyword" placeholder="Nhập tên sản phẩm, SKU, Barcode ..." class="form-control" />
-      </div>
-      <div class="input-group" style="display: flex; align-items: flex-end;">
-        <button class="btn btn-primary" @click="handleSearch" style="white-space: nowrap;"><i class="fas fa-search"></i> Tìm kiếm</button>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="table-wrapper">
-      <!-- Loading -->
-      <div v-if="loading" class="loading-indicator">
-        <span>Đang tải dữ liệu...</span>
+      <!-- Filters -->
+      <div v-if="canSearch" class="page-filters">
+        <div class="input-group">
+          <input type="text" v-model="searchKeyword" placeholder="Nhập tên sản phẩm, SKU, Barcode ..."
+            class="form-control" />
+        </div>
+        <div class="input-group" style="display: flex; align-items: flex-end;">
+          <button class="btn btn-primary" @click="handleSearch" style="white-space: nowrap;"><i
+              class="fas fa-search"></i> Tìm kiếm</button>
+        </div>
       </div>
 
-      <!-- Error Message -->
-      <div v-else-if="error" class="error-message">
-        <span>{{ error }}</span>
-        <button class="btn btn-sm btn-primary" @click="fetchSanphams">Thử lại</button>
-      </div>
+      <!-- Table -->
+      <div class="table-wrapper">
+        <!-- Loading -->
+        <div v-if="loading" class="loading-indicator">
+          <span>Đang tải dữ liệu...</span>
+        </div>
 
-      <!-- Table Data -->
-      <div v-else class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 30px" class="col-stt">#</th>
-              <th style="width: 100px" class="col-action">Thao tác</th>
-              <th style="width: 100px">Mã sản phẩm</th>
-              <th style="width: 180px">Danh mục</th>
-              <th>Tên sản phẩm</th>
-              <th style="width: 120px" class="text-right">Giá vốn</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="paginatedProducts.length === 0">
-              <td colspan="7" class="text-center">Không có dữ liệu</td>
-            </tr>
-            <tr v-for="(product, index) in paginatedProducts" :key="product.sanphamId || product.Sku || index">
-              <td class="col-stt">{{ (currentPage - 1) * perPage + index + 1 }}</td>
-              <td class="col-action">
-                <div class="dropdown" v-if="canEdit || canDelete || canView">
-                  <button class="row-action-btn">⚙</button>
-                  <div class="dropdown-menu">
-                    <a v-if="canView" class="dropdown-item" @click="openViewModal(product)">👁️ Xem chi tiết</a>
-                    <a v-if="canEdit" class="dropdown-item" @click="openEditModal(product)">✏️ Sửa</a>
-                    <div v-if="canDelete && (canEdit || canView)" class="dropdown-divider"></div>
-                    <a v-if="canDelete" class="dropdown-item text-danger" @click="handleDelete(product.sanphamId)">🗑️ Xóa</a>
+        <!-- Error Message -->
+        <div v-else-if="error" class="error-message">
+          <span>{{ error }}</span>
+          <button class="btn btn-sm btn-primary" @click="fetchSanphams">Thử lại</button>
+        </div>
+
+        <!-- Table Data -->
+        <div v-else class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 30px" class="col-stt">#</th>
+                <th style="width: 100px" class="col-action">Thao tác</th>
+                <th style="width: 100px">Mã sản phẩm</th>
+                <th style="width: 180px">Danh mục</th>
+                <th>Tên sản phẩm</th>
+                <th style="width: 120px" class="text-right">Giá vốn</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="paginatedProducts.length === 0">
+                <td colspan="7" class="text-center">Không có dữ liệu</td>
+              </tr>
+              <tr v-for="(product, index) in paginatedProducts" :key="product.sanphamId || product.Sku || index">
+                <td class="col-stt">{{ (currentPage - 1) * perPage + index + 1 }}</td>
+                <td class="col-action">
+                  <div class="dropdown" v-if="canEdit || canDelete || canView">
+                    <button class="row-action-btn">⚙</button>
+                    <div class="dropdown-menu">
+                      <a v-if="canView" class="dropdown-item" @click="openViewModal(product)">👁️ Xem chi tiết</a>
+                      <a v-if="canEdit" class="dropdown-item" @click="openEditModal(product)">✏️ Sửa</a>
+                      <div v-if="canDelete && (canEdit || canView)" class="dropdown-divider"></div>
+                      <a v-if="canDelete" class="dropdown-item text-danger" @click="handleDelete(product.sanphamId)">🗑️
+                        Xóa</a>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td class="sku-col">{{ product.Sku || product.sku }}</td>
-              <td class="barcode-col">{{ '' }}</td>
-              <td class="product-name">{{ product.Name || product.name }}</td>
-              <td class="text-right price-col">{{ formatCurrency(product.CostPrice || product.costPrice || 0) }}</td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td class="sku-col">{{ product.Sku || product.sku }}</td>
+                <td class="barcode-col">{{ '' }}</td>
+                <td class="product-name">{{ product.Name || product.name }}</td>
+                <td class="text-right price-col">{{ formatCurrency(product.CostPrice || product.costPrice || 0) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <!-- Pagination -->
-    <div class="table-footer" v-if="!error && !loading">
-      <div class="perpage">
-        <label>Hiển thị</label>
-        <select v-model="perPage">
-          <option :value="10">10</option>
-          <option :value="25">25</option>
-          <option :value="50">50</option>
-        </select>
-        <span>Hiển thị {{ pageStart }} đến {{ pageEnd }} / {{ totalItems }} bản ghi</span>
+      <!-- Pagination -->
+      <div class="table-footer" v-if="!error && !loading">
+        <div class="perpage">
+          <label>Hiển thị</label>
+          <select v-model="perPage">
+            <option :value="10">10</option>
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+          </select>
+          <span>Hiển thị {{ pageStart }} đến {{ pageEnd }} / {{ totalItems }} bản ghi</span>
+        </div>
+        <div class="pagination">
+          <button class="pg-btn" :disabled="currentPage <= 1" @click="goToFirst">|&lt;</button>
+          <button class="pg-btn" :disabled="currentPage <= 1" @click="prevPage">&lt;</button>
+          <button class="pg-btn active">{{ currentPage }} / {{ totalPages }}</button>
+          <button class="pg-btn" :disabled="currentPage >= totalPages" @click="nextPage">&gt;</button>
+          <button class="pg-btn" :disabled="currentPage >= totalPages" @click="goToLast">&gt;|</button>
+        </div>
       </div>
-      <div class="pagination">
-        <button class="pg-btn" :disabled="currentPage <= 1" @click="goToFirst">|&lt;</button>
-        <button class="pg-btn" :disabled="currentPage <= 1" @click="prevPage">&lt;</button>
-        <button class="pg-btn active">{{ currentPage }} / {{ totalPages }}</button>
-        <button class="pg-btn" :disabled="currentPage >= totalPages" @click="nextPage">&gt;</button>
-        <button class="pg-btn" :disabled="currentPage >= totalPages" @click="goToLast">&gt;|</button>
-      </div>
-    </div>
 
       <!-- Modal Component -->
-      <SanPhamModal
-        :show="showModal"
-        :mode="modalMode"
-        :product="selectedProduct"
-        @close="closeModal"
-        @save="handleSaveProduct"
-      />
+      <SanPhamModal :show="showModal" :mode="modalMode" :product="selectedProduct" @close="closeModal"
+        @save="handleSaveProduct" />
     </template>
   </div>
 </template>
 
 <style scoped>
+/* Page Header & Toolbar on same line */
+.page-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header-toolbar .page-header {
+  margin: 0;
+}
+
+.page-header-toolbar .page-toolbar {
+  display: flex;
+  gap: 10px;
+}
+
 /* Page container with flex layout */
 .page-container {
   display: flex;
@@ -361,7 +373,6 @@ onMounted(() => {
   align-items: center;
   padding: 10px 16px;
   background: #fff;
-  border-bottom: 1px solid #e0e0e0;
   gap: 12px;
   flex-shrink: 0;
 }
@@ -442,11 +453,11 @@ onMounted(() => {
   .page-filters {
     grid-template-columns: 1fr;
   }
-  
+
   .page-filters .input-group {
     grid-column: span 1 !important;
   }
-  
+
   .page-toolbar {
     flex-wrap: wrap;
   }

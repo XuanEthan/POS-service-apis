@@ -34,6 +34,11 @@ const formData = ref({
 // Validation errors
 const errors = ref({})
 
+// Permissions data
+const permissions = ref([])
+const selectedPermissions = ref([])
+const loadingPermissions = ref(false)
+
 // Title based on mode
 const modalTitle = computed(() => {
   switch (props.mode) {
@@ -47,6 +52,34 @@ const modalTitle = computed(() => {
 // Is readonly mode
 const isReadonly = computed(() => props.mode === 'view')
 
+// Fetch permissions list
+async function fetchPermissions() {
+  loadingPermissions.value = true
+  try {
+    const response = await getPermissions()
+    if (response.isSuccess) {
+      permissions.value = response.object || []
+    }
+  } catch (e) {
+    console.error('Lỗi tải danh sách quyền:', e)
+  } finally {
+    loadingPermissions.value = false
+  }
+}
+
+// Fetch role permissions for edit mode
+async function fetchRolePermissions(roleId) {
+  if (!roleId) return
+  try {
+    const response = await getRolePermissions({ RoleId: roleId })
+    if (response.isSuccess) {
+      selectedPermissions.value = (response.object || []).map(rp => rp.permissionId)
+    }
+  } catch (e) {
+    console.error('Lỗi tải phân quyền:', e)
+  }
+}
+
 // Watch for role changes to populate form
 watch(() => props.role, (newRole) => {
   if (newRole && Object.keys(newRole).length > 0) {
@@ -56,6 +89,10 @@ watch(() => props.role, (newRole) => {
       title: newRole.title || '',
       parentId: newRole.parentId || ""
     }
+    // Fetch role permissions for edit mode
+    if (props.mode === 'edit' && newRole.roleId) {
+      fetchRolePermissions(newRole.roleId)
+    }
   } else {
     resetForm()
   }
@@ -63,8 +100,11 @@ watch(() => props.role, (newRole) => {
 
 // Watch for visibility to reset form on open for create mode
 watch(() => props.visible, (isVisible) => {
-  if (isVisible && props.mode === 'create') {
-    resetForm()
+  if (isVisible) {
+    fetchPermissions()
+    if (props.mode === 'create') {
+      resetForm()
+    }
   }
   errors.value = {}
 })
@@ -77,6 +117,7 @@ function resetForm() {
     title: '',
     parentId: null
   }
+  selectedPermissions.value = []
   errors.value = {}
 }
 
@@ -95,6 +136,21 @@ function validateForm() {
   return Object.keys(errors.value).length === 0
 }
 
+// Toggle permission selection
+function togglePermission(permissionId) {
+  const index = selectedPermissions.value.indexOf(permissionId)
+  if (index > -1) {
+    selectedPermissions.value.splice(index, 1)
+  } else {
+    selectedPermissions.value.push(permissionId)
+  }
+}
+
+// Check if permission is selected
+function isPermissionSelected(permissionId) {
+  return selectedPermissions.value.includes(permissionId)
+}
+
 // Handle save
 function handleSave() {
   if (!validateForm()) return
@@ -104,7 +160,9 @@ function handleSave() {
     // Generate new UUID for create mode, keep existing for edit
     roleId: props.mode === 'create' ? generateUUID() : formData.value.roleId,
     // Use EMPTY_GUID if parentId is not selected
-    parentId: formData.value.parentId || EMPTY_GUID
+    parentId: formData.value.parentId || EMPTY_GUID,
+    // Include selected permissions
+    selectedPermissions: selectedPermissions.value
   }
   
   emit('save', data)
@@ -121,6 +179,37 @@ const parentOptions = computed(() => {
     return props.roles.filter(r => r.roleId !== formData.value.roleId)
   }
   return props.roles
+})
+
+// Build tree structure for permissions
+const permissionsTree = computed(() => {
+  const items = permissions.value || []
+  const map = new Map()
+  const roots = []
+  
+  items.forEach(item => {
+    map.set(item.permissionId, { ...item, children: [] })
+  })
+  
+  items.forEach(item => {
+    const node = map.get(item.permissionId)
+    const parentId = item.parentId
+    
+    const isRoot = !parentId || parentId === '00000000-0000-0000-0000-000000000000'
+    
+    if (isRoot) {
+      roots.push(node)
+    } else {
+      const parent = map.get(parentId)
+      if (parent) {
+        parent.children.push(node)
+      } else {
+        roots.push(node)
+      }
+    }
+  })
+  
+  return roots
 })
 </script>
 
@@ -179,6 +268,8 @@ const parentOptions = computed(() => {
               </option>
             </select>
           </div>
+
+
         </div>
 
         <!-- Modal Footer -->
@@ -345,5 +436,109 @@ const parentOptions = computed(() => {
 
 .btn-secondary:hover {
   background: #545b62;
+}
+
+/* Permissions Tree */
+.permissions-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.loading-text,
+.empty-text {
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+  padding: 20px;
+}
+
+.permissions-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.permission-node {
+  display: flex;
+  flex-direction: column;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.permission-item:hover {
+  background: #f0f0f0;
+}
+
+.permission-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.permission-checkbox:disabled {
+  cursor: not-allowed;
+}
+
+.permission-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex: 1;
+  font-size: 13px;
+  user-select: none;
+}
+
+.permission-icon {
+  font-size: 14px;
+}
+
+.permission-title {
+  font-weight: 500;
+  color: #333;
+}
+
+.permission-code {
+  color: #666;
+  font-size: 12px;
+}
+
+.permission-children {
+  margin-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 8px;
+  margin-top: 4px;
+}
+
+.permissions-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.permissions-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.permissions-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.permissions-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>

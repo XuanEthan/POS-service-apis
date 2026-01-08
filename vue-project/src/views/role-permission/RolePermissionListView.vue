@@ -45,7 +45,7 @@ async function fetchRolePermissions(filters = {}) {
     if (response.isSuccess) {
       rolePermissions.value = response.object || []
     } else {
-      if(response.code === 403){
+      if (response.code === 403) {
         error.value = `❌ Truy cập bị từ chối! Bạn không có quyền xem danh sách "${MODULE_LABELS.rolePermission || 'phân quyền'}". Vui lòng liên hệ quản trị viên.`
         return
       }
@@ -82,6 +82,7 @@ async function fetchPermissions() {
   }
 }
 
+
 // Mở modal thêm mới
 function openCreateModal() {
   selectedRolePermission.value = {}
@@ -90,25 +91,39 @@ function openCreateModal() {
 }
 
 // Mở modal thêm mới cho Role cụ thể
-function openCreateModalForRole(roleId) {
-  selectedRolePermission.value = { roleId }
-  modalMode.value = 'create'
-  showModal.value = true
-}
+// function openCreateModalForRole(roleId) {
+//   selectedRolePermission.value = { roleId }
+//   modalMode.value = 'create'
+//   showModal.value = true
+// }
 
-// Mở modal sửa
-function openEditModal(rp) {
-  selectedRolePermission.value = { ...rp }
+// Mở modal sửa cho Role cụ thể
+async function openEditModalForRole(roleId) {
+  selectedRolePermission.value = { roleId }
   modalMode.value = 'edit'
   showModal.value = true
 }
 
-// Mở modal xem chi tiết
-function openViewModal(rp) {
-  selectedRolePermission.value = { ...rp }
+// Mở modal xem cho Role cụ thể
+async function openViewModalForRole(roleId) {
+  selectedRolePermission.value = { roleId }
   modalMode.value = 'view'
   showModal.value = true
 }
+
+// Mở modal sửa
+// function openEditModal(rp) {
+//   selectedRolePermission.value = { ...rp }
+//   modalMode.value = 'edit'
+//   showModal.value = true
+// }
+
+// // Mở modal xem chi tiết
+// function openViewModal(rp) {
+//   selectedRolePermission.value = { ...rp }
+//   modalMode.value = 'view'
+//   showModal.value = true
+// }
 
 // Đóng modal
 function closeModal() {
@@ -119,13 +134,7 @@ function closeModal() {
 // Lưu role permission (thêm mới hoặc cập nhật)
 async function handleSaveRolePermission(data) {
   try {
-    let response
-    if (modalMode.value === 'create') {
-      response = await createRolePermission(data)
-    } else {
-      response = await updateRolePermission(data.rolePermissionId, data)
-    }
-
+    let response = await createRolePermission(data)
     if (response.isSuccess) {
       alert(modalMode.value === 'create' ? 'Thêm mới thành công!' : 'Cập nhật thành công!')
       closeModal()
@@ -134,7 +143,7 @@ async function handleSaveRolePermission(data) {
       alert(response.message || 'Thao tác thất bại!')
     }
   } catch (e) {
-    alert('Lỗi kết nối server')
+    alert('Lỗi kết nối server', e)
   }
 }
 
@@ -231,19 +240,20 @@ onMounted(() => {
   <PermissionAlert :hasPermission="canAccessModule_rolePermission" />
 
   <div v-if="canAccessModule_rolePermission" class="page-container">
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1 class="page-title">PHÂN QUYỀN</h1>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="page-toolbar">
-      <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Phân quyền</button>
-      <button class="btn btn-secondary" @click="fetchRolePermissions">🔄 Tải lại</button>
+    <!-- Page Header & Toolbar -->
+    <div class="page-header-toolbar">
+      <div class="page-header">
+        <h1 class="page-title">PHÂN QUYỀN</h1>
+      </div>
+      <div class="page-toolbar">
+        <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Phân quyền</button>
+        <button class="btn btn-secondary" @click="fetchRolePermissions">🔄 Tải lại</button>
+      </div>
     </div>
 
     <!-- Filters -->
-    <div v-if="canSearch_rolePermission" class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+    <div v-if="canSearch_rolePermission" class="page-filters"
+      style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
       <select v-model="filterRole" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Chọn Vai trò --</option>
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
@@ -279,6 +289,7 @@ onMounted(() => {
               <th class="col-stt">STT</th>
               <th style="width: 180px;">Vai trò</th>
               <th>Danh sách quyền</th>
+              <th class="col-action">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -300,16 +311,19 @@ onMounted(() => {
                   </span>
                 </div>
               </td>
-              <!-- <td class="col-action">
-                <button 
-                  v-if="canAdd" 
-                  class="btn btn-sm btn-primary" 
-                  @click="openCreateModalForRole(group.roleId)"
-                  title="Thêm quyền cho vai trò này"
-                >
-                  + Thêm
-                </button>
-              </td> -->
+              <td class="col-action">
+                <div class="dropdown" v-if="canEdit || canDelete || canView">
+                  <button class="row-action-btn">⚙</button>
+                  <div class="dropdown-menu">
+                    <a v-if="canView" class="dropdown-item" @click="openViewModalForRole(group.roleId)">👁️ Xem chi
+                      tiết</a>
+                    <a v-if="canEdit" class="dropdown-item" @click="openEditModalForRole(group.roleId)"><i class="fas fa-key action-icon"></i> Phân quyền</a>
+                    <div v-if="canDelete && (canEdit || canView)" class="dropdown-divider"></div>
+                    <a v-if="canDelete" class="dropdown-item text-danger" @click="handleDelete(group.roleId)">🗑️ Xóa
+                      phân quyền</a>
+                  </div>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -330,6 +344,22 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Page Header & Toolbar on same line */
+.page-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header-toolbar .page-header {
+  margin: 0;
+}
+
+.page-header-toolbar .page-toolbar {
+  display: flex;
+  gap: 10px;
+}
+
 .page-filters {
   display: flex;
   gap: 10px;

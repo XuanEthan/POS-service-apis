@@ -30,7 +30,7 @@ const BASE_URL = 'https://localhost:7219/api'
  */
 export async function login(username, password) {
   try {
-    const response = await fetch(`${BASE_URL}/Account/login`, {
+    const response = await fetch(`${BASE_URL}/Accounts/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export async function refreshToken() {
   }
   
   try {
-    const response = await fetch(`${BASE_URL}/Account/refreshtoken`, {
+    const response = await fetch(`${BASE_URL}/Accounts/refreshtoken`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

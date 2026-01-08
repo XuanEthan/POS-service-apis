@@ -34,10 +34,14 @@ const props = defineProps({
   showDelete: {
     type: Boolean,
     default: true
+  },
+  showPermission: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['edit', 'delete', 'view', 'select'])
+const emit = defineEmits(['edit', 'delete', 'view', 'select', 'permission'])
 
 // Track expanded nodes
 const expandedNodes = ref(new Set())
@@ -82,6 +86,7 @@ const treeData = computed(() => {
   
   return roots
 })
+
 
 // Toggle expand/collapse
 function toggleNode(nodeId) {
@@ -129,6 +134,10 @@ function collapseAll() {
   expandedNodes.value = new Set(expandedNodes.value)
 }
 
+function clickNode(id) {
+  emit('select', id)
+}
+
 // Expose methods
 defineExpose({ expandAll, collapseAll })
 </script>
@@ -170,20 +179,11 @@ defineExpose({ expandAll, collapseAll })
               </span>
               
               <!-- Checkbox -->
-              <input 
-                type="checkbox" 
-                class="tree-checkbox"
-                :checked="isSelected(node[idKey])"
-                @change="toggleSelect(node[idKey])"
-              />
-              
               <!-- Icon -->
               <span class="tree-icon">
                 <template v-if="node.children && node.children.length > 0">
-                  📁
                 </template>
                 <template v-else>
-                  📄
                 </template>
               </span>
               
@@ -194,7 +194,9 @@ defineExpose({ expandAll, collapseAll })
               </span>
               
               <!-- Actions -->
-              <div class="tree-actions" v-if="showEdit || showView || showDelete">
+              <div class="tree-actions" v-if="showEdit || showView || showDelete || showPermission">
+                <!--  -->
+                <button v-if="showPermission" class="action-btn permission" @click="$emit('permission', node)" title="Phân quyền">🔐</button>
                 <button v-if="showEdit" class="action-btn edit" @click="$emit('edit', node)" title="Sửa">✏️</button>
                 <button v-if="showView" class="action-btn view" @click="$emit('view', node)" title="Xem">👁️</button>
                 <button v-if="showDelete" class="action-btn delete" @click="$emit('delete', node)" title="Xóa">🗑️</button>
@@ -240,7 +242,8 @@ defineExpose({ expandAll, collapseAll })
                       <span class="tree-title">{{ child[labelKey] }}</span>
                     </span>
                     
-                    <div class="tree-actions" v-if="showEdit || showView || showDelete">
+                    <div class="tree-actions" v-if="showEdit || showView || showDelete || showPermission">
+                      <button v-if="showPermission" class="action-btn permission" @click="$emit('permission', child)" title="Phân quyền">🔐</button>
                       <button v-if="showEdit" class="action-btn edit" @click="$emit('edit', child)" title="Sửa">✏️</button>
                       <button v-if="showView" class="action-btn view" @click="$emit('view', child)" title="Xem">👁️</button>
                       <button v-if="showDelete" class="action-btn delete" @click="$emit('delete', child)" title="Xóa">🗑️</button>
@@ -276,7 +279,8 @@ defineExpose({ expandAll, collapseAll })
                             <span class="tree-title">{{ grandChild[labelKey] }}</span>
                           </span>
                           
-                          <div class="tree-actions" v-if="showEdit || showView || showDelete">
+                          <div class="tree-actions" v-if="showEdit || showView || showDelete || showPermission">
+                            <button v-if="showPermission" class="action-btn permission" @click="$emit('permission', grandChild)" title="Phân quyền">🔐</button>
                             <button v-if="showEdit" class="action-btn edit" @click="$emit('edit', grandChild)" title="Sửa">✏️</button>
                             <button v-if="showView" class="action-btn view" @click="$emit('view', grandChild)" title="Xem">👁️</button>
                             <button v-if="showDelete" class="action-btn delete" @click="$emit('delete', grandChild)" title="Xóa">🗑️</button>
@@ -443,6 +447,10 @@ defineExpose({ expandAll, collapseAll })
 
 .action-btn:hover {
   background: #e9ecef;
+}
+
+.action-btn.permission:hover {
+  background: #fff3cd;
 }
 
 .action-btn.delete:hover {

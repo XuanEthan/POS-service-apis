@@ -229,17 +229,17 @@ onMounted(() => {
   <PermissionAlert :hasPermission="canAccessModule_hoadon" />
 
   <div v-if="canAccessModule_hoadon" class="page-container">
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1 class="page-title">QUẢN LÝ HÓA ĐƠN</h1>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="page-toolbar">
-      <button v-if="canAdd_hoadon" class="btn btn-primary" @click="openCreateModal">
-        <span>+</span> Thêm mới
-      </button>
-      <button class="btn btn-secondary" @click="fetchInvoices">🔄 Tải lại</button>
+    <!-- Page Header & Toolbar -->
+    <div class="page-header-toolbar">
+      <div class="page-header">
+        <h1 class="page-title">QUẢN LÝ HÓA ĐƠN</h1>
+      </div>
+      <div class="page-toolbar">
+        <button v-if="canAdd_hoadon" class="btn btn-primary" @click="openCreateModal">
+          <span>+</span> Thêm mới
+        </button>
+        <button class="btn btn-secondary" @click="fetchInvoices">🔄 Tải lại</button>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -357,6 +357,22 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Page Header & Toolbar on same line */
+.page-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header-toolbar .page-header {
+  margin: 0;
+}
+
+.page-header-toolbar .page-toolbar {
+  display: flex;
+  gap: 10px;
+}
+
 .loading-indicator {
   padding: 20px;
   text-align: center;

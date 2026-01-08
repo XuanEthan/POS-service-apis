@@ -1,10 +1,10 @@
 import { get, post, put, del } from './api'
 
-const ENDPOINT = '/RolePermission/rolepermissions'
+const ENDPOINT = '/RolePermissions'
 
 export async function getRolePermissions(filters) {
   let qs = ''
-  if(filters !=null){
+  if(filters != null ){
     qs = new URLSearchParams(filters).toString()
   }
   return await get(`${ENDPOINT}?${qs}`)

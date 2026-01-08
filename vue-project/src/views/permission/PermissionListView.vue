@@ -81,26 +81,16 @@ onMounted(() => {
   <PermissionAlert :hasPermission="canAccessModule_permission" />
 
   <div v-if="canAccessModule_permission" class="page-container">
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1 class="page-title">QUẢN LÝ QUYỀN</h1>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="page-toolbar">
-      <!-- <button class="btn btn-primary"><span>+</span> Thêm mới</button>
-      <button class="btn btn-danger">Xóa đã chọn</button>
-      <button class="btn btn-warning">Xuất danh sách</button>
-      <button class="btn btn-secondary" @click="fetchPermissions">🔄 Tải lại</button> -->
-    </div>
-
-    <!-- Filters -->
-    <div class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
-      <div style="flex: 1;"></div>
+    <!-- Page Header & Toolbar -->
+    <div class="page-header-toolbar">
+      <div class="page-header">
+        <h1 class="page-title">QUẢN LÝ QUYỀN</h1>
+      </div>
       <div class="tree-stats" style="flex: 0 0 auto; font-size: 12px; color: #666;">
         Tổng: <strong>{{ permissions.length }}</strong> quyền
       </div>
     </div>
+
 
     <!-- Loading / Error -->
     <div v-if="loading" class="loading-indicator">
@@ -132,6 +122,22 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Page Header & Toolbar on same line */
+.page-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header-toolbar .page-header {
+  margin: 0;
+}
+
+.page-header-toolbar .page-toolbar {
+  display: flex;
+  gap: 10px;
+}
+
 .loading-indicator {
   padding: 20px;
   text-align: center;

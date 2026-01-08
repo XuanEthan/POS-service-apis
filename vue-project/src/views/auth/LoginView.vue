@@ -24,17 +24,16 @@ async function handleSubmit() {
     error.value = 'Vui lòng nhập mật khẩu'
     return
   }
-  
+
   loading.value = true
   error.value = ''
-  
+
   try {
     const response = await login(form.username, form.password)
-    
+    console.log(response);
     if (response.isSuccess) {
       // Đăng nhập thành công, chuyển đến trang chủ
       router.push('/')
-    console.log(response);
     } else {
       error.value = response.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'
     }
@@ -62,53 +61,36 @@ function togglePassword() {
         <h1>Đăng nhập</h1>
         <p>Chào mừng bạn quay trở lại!</p>
       </div>
-      
+
       <!-- Error message -->
       <div v-if="error" class="error-alert">
         <i class="fas fa-exclamation-triangle error-icon"></i>
         <span>{{ error }}</span>
       </div>
-      
+
       <!-- Login Form -->
       <form @submit.prevent="handleSubmit" class="login-form">
         <div class="form-group">
           <label for="username">Tên đăng nhập</label>
           <div class="input-wrapper">
             <i class="fas fa-user input-icon"></i>
-            <input 
-              type="text" 
-              id="username" 
-              v-model="form.username"
-              placeholder="Nhập tên đăng nhập"
-              :disabled="loading"
-              autocomplete="username"
-            />
+            <input type="text" id="username" v-model="form.username" placeholder="Nhập tên đăng nhập"
+              :disabled="loading" autocomplete="username" />
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="password">Mật khẩu</label>
           <div class="input-wrapper">
             <i class="fas fa-lock input-icon"></i>
-            <input 
-              :type="showPassword ? 'text' : 'password'" 
-              id="password" 
-              v-model="form.password"
-              placeholder="Nhập mật khẩu"
-              :disabled="loading"
-              autocomplete="current-password"
-            />
-            <button 
-              type="button" 
-              class="toggle-password"
-              @click="togglePassword"
-              tabindex="-1"
-            >
+            <input :type="showPassword ? 'text' : 'password'" id="password" v-model="form.password"
+              placeholder="Nhập mật khẩu" :disabled="loading" autocomplete="current-password" />
+            <button type="button" class="toggle-password" @click="togglePassword" tabindex="-1">
               <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </button>
           </div>
         </div>
-        
+
         <div class="form-options">
           <label class="remember-me">
             <input type="checkbox" />
@@ -116,12 +98,8 @@ function togglePassword() {
           </label>
           <a href="#" class="forgot-password">Quên mật khẩu?</a>
         </div>
-        
-        <button 
-          type="submit" 
-          class="btn-login"
-          :disabled="loading"
-        >
+
+        <button type="submit" class="btn-login" :disabled="loading">
           <span v-if="loading" class="loading-spinner"></span>
           <template v-else>
             <i class="fas fa-sign-in-alt"></i>
@@ -129,7 +107,7 @@ function togglePassword() {
           </template>
         </button>
       </form>
-      
+
       <!-- Footer -->
       <div class="login-footer">
         <p>© 2025 POS System</p>
@@ -158,7 +136,7 @@ function togglePassword() {
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
+  background:
     linear-gradient(135deg, rgba(52, 73, 94, 0.8) 0%, rgba(44, 62, 80, 0.9) 100%);
   pointer-events: none;
 }
@@ -369,7 +347,9 @@ function togglePassword() {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .login-footer {
@@ -390,7 +370,7 @@ function togglePassword() {
   .login-box {
     padding: 24px 20px;
   }
-  
+
   .login-header h1 {
     font-size: 18px;
   }

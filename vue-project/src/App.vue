@@ -166,14 +166,14 @@ onUnmounted(() => {
               <i class="fas fa-user-tag dropdown-icon"></i>
               <span>Vai trò</span>
             </RouterLink>
-            <RouterLink v-if="menuPermissions.permission" to="/permission" class="dropdown-item">
+            <!-- <RouterLink v-if="menuPermissions.permission" to="/permission" class="dropdown-item">
               <i class="fas fa-shield-alt dropdown-icon"></i>
               <span>Quyền</span>
             </RouterLink>
             <RouterLink v-if="menuPermissions.rolePermission" to="/role-permission" class="dropdown-item">
               <i class="fas fa-key dropdown-icon"></i>
               <span>Phân quyền</span>
-            </RouterLink>
+            </RouterLink> -->
             <div class="dropdown-divider"></div>
             <div class="dropdown-item">
               <i class="fas fa-sliders-h dropdown-icon"></i>

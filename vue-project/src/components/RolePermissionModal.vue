@@ -1,6 +1,8 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { generateUUID, EMPTY_GUID } from '@/utils/uuid'
+import { EMPTY_GUID } from '@/utils/uuid'
+import { getRolePermissions } from '@/services/rolePermissionService'
+import { hasPermission } from '@/utils/auth'
 
 const props = defineProps({
   visible: {
@@ -35,6 +37,10 @@ const formData = ref({
   statusId: 1
 })
 
+// Selected permissions (for multiple selection)
+const selectedPermissions = ref([])
+const loadingRolePermissions = ref(false)
+
 // Validation errors
 const errors = ref({})
 
@@ -65,10 +71,86 @@ watch(() => props.rolePermission, (newRolePermission) => {
   }
 }, { immediate: true, deep: true })
 
+// Fetch role permissions for edit mode
+async function fetchRolePermissions(roleId) {
+  if (!roleId) return
+  loadingRolePermissions.value = true
+  try {
+    const response = await getRolePermissions({ RoleId: roleId })
+    if (response.isSuccess) {
+      selectedPermissions.value = (response.object || []).map(rp => rp.permissionId)
+    }
+  } catch (e) {
+    console.error('Lỗi tải phân quyền:', e)
+  } finally {
+    loadingRolePermissions.value = false
+  }
+}
+
+// Helper: Lấy tất cả children IDs của một permission (recursive)
+function getAllChildrenIds(permissionId) {
+  const permission = props.permissions.find(p => p.permissionId === permissionId)
+  if (!permission) return []
+  
+  const childrenIds = []
+  const children = props.permissions.filter(p => p.parentId === permissionId)
+  
+  children.forEach(child => {
+    childrenIds.push(child.permissionId)
+    // Recursive: lấy children của child
+    childrenIds.push(...getAllChildrenIds(child.permissionId))
+  })
+  
+  return childrenIds
+}
+
+// Toggle permission selection
+function togglePermission(permissionId) {
+  const index = selectedPermissions.value.indexOf(permissionId)
+  
+  if (index > -1) {
+    // Bỏ chọn: Bỏ chọn cả node này và tất cả children
+    selectedPermissions.value.splice(index, 1)
+    const childrenIds = getAllChildrenIds(permissionId)
+    childrenIds.forEach(childId => {
+      const childIndex = selectedPermissions.value.indexOf(childId)
+      if (childIndex > -1) {
+        selectedPermissions.value.splice(childIndex, 1)
+      }
+    })
+  } else {
+    // Chọn: Chọn cả node này và tất cả children
+    selectedPermissions.value.push(permissionId)
+    const childrenIds = getAllChildrenIds(permissionId)
+    childrenIds.forEach(childId => {
+      if (!selectedPermissions.value.includes(childId)) {
+        selectedPermissions.value.push(childId)
+      }
+    })
+  }
+}
+
+// Check if permission is selected
+function isPermissionSelected(permissionId) {
+  return selectedPermissions.value.includes(permissionId)
+}
+
+// Watch for roleId change to fetch permissions
+watch(() => formData.value.roleId, (newRoleId) => {
+  if (newRoleId && (props.mode === 'edit' || props.mode === 'view')) {
+    fetchRolePermissions(newRoleId)
+  }
+})
+
 // Watch for visibility to reset form on open for create mode
 watch(() => props.visible, (isVisible) => {
-  if (isVisible && props.mode === 'create') {
-    resetForm()
+  if (isVisible) {
+    if (props.mode === 'create') {
+      resetForm()
+    } else if ((props.mode === 'edit' || props.mode === 'view') && formData.value.roleId) {
+      // Fetch existing permissions for this role
+      fetchRolePermissions(formData.value.roleId)
+    }
   }
   errors.value = {}
 })
@@ -81,6 +163,7 @@ function resetForm() {
     permissionId: '',
     statusId: 1
   }
+  selectedPermissions.value = []
   errors.value = {}
 }
 
@@ -92,8 +175,8 @@ function validateForm() {
     errors.value.roleId = 'Vui lòng chọn vai trò'
   }
 
-  if (!formData.value.permissionId) {
-    errors.value.permissionId = 'Vui lòng chọn quyền'
+  if (selectedPermissions.value.length === 0) {
+    errors.value.permissions = 'Vui lòng chọn ít nhất một quyền'
   }
 
   return Object.keys(errors.value).length === 0
@@ -104,13 +187,10 @@ function handleSave() {
   if (!validateForm()) return
 
   const data = {
-    ...formData.value,
-    // Generate new UUID for create mode, keep existing for edit
-    rolePermissionId: props.mode === 'create' ? generateUUID() : formData.value.rolePermissionId,
-    // Use EMPTY_GUID if IDs are not selected
-    roleId: formData.value.roleId || EMPTY_GUID,
-    permissionId: formData.value.permissionId || EMPTY_GUID
+    RoleId: formData.value.roleId || EMPTY_GUID,
+    PermissionIds: selectedPermissions.value
   }
+  console.log('Saving role permissions:', data)
   emit('save', data)
 }
 
@@ -130,6 +210,37 @@ function getPermissionName(permissionId) {
   const permission = props.permissions.find(p => p.permissionId === permissionId)
   return permission ? permission.title : permissionId
 }
+
+// Build tree structure for permissions
+const permissionsTree = computed(() => {
+  const items = props.permissions || []
+  const map = new Map()
+  const roots = []
+  
+  items.forEach(item => {
+    map.set(item.permissionId, { ...item, children: [] })
+  })
+  
+  items.forEach(item => {
+    const node = map.get(item.permissionId)
+    const parentId = item.parentId
+    
+    const isRoot = !parentId || parentId === '00000000-0000-0000-0000-000000000000'
+    
+    if (isRoot) {
+      roots.push(node)
+    } else {
+      const parent = map.get(parentId)
+      if (parent) {
+        parent.children.push(node)
+      } else {
+        roots.push(node)
+      }
+    }
+  })
+  
+  return roots
+})
 </script>
 
 <template>
@@ -138,7 +249,7 @@ function getPermissionName(permissionId) {
       <div class="modal-container">
         <!-- Modal Header -->
         <div class="modal-header">
-          <h3 class="modal-title">{{ modalTitle }}</h3>
+          <h3 class="modal-title">Phân quyền cho vai trò</h3>
           <button class="modal-close" @click="handleClose">&times;</button>
         </div>
 
@@ -147,7 +258,7 @@ function getPermissionName(permissionId) {
           <div class="form-group">
             <label class="form-label">Vai trò <span class="required">*</span></label>
             <select v-model="formData.roleId" class="form-control" :class="{ 'is-invalid': errors.roleId }"
-              :disabled="isReadonly">
+               disabled="true">
               <option value="">-- Chọn vai trò --</option>
               <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
                 {{ role.title }} ({{ role.code }})
@@ -157,28 +268,75 @@ function getPermissionName(permissionId) {
           </div>
 
           <div class="form-group">
-            <label class="form-label">Quyền <span class="required">*</span></label>
-            <select v-model="formData.permissionId" class="form-control" :class="{ 'is-invalid': errors.permissionId }"
-              :disabled="isReadonly">
-              <option value="">-- Chọn quyền --</option>
-              <option v-for="permission in permissions" :key="permission.permissionId" :value="permission.permissionId">
-                {{ permission.title }} ({{ permission.code }})
-              </option>
-            </select>
-            <span v-if="errors.permissionId" class="error-text">{{ errors.permissionId }}</span>
+            <label class="form-label">Phân quyền cho vai trò <span class="required">*</span></label>
+            <div class="permissions-container">
+              <div v-if="loadingRolePermissions" class="loading-text">Đang tải quyền...</div>
+              <div v-else-if="permissions.length === 0" class="empty-text">Không tìm thấy quyền nào</div>
+              <div v-else class="permissions-tree">
+                <!-- Root level permissions -->
+                <div v-for="permission in permissionsTree" :key="permission.permissionId" class="permission-node">
+                  <div class="permission-item">
+                    <input 
+                      type="checkbox" 
+                      :id="'perm-' + permission.permissionId"
+                      :checked="isPermissionSelected(permission.permissionId)"
+                      @change="togglePermission(permission.permissionId)"
+                      :disabled="isReadonly"
+                      class="permission-checkbox"
+                    />
+                    <label :for="'perm-' + permission.permissionId" class="permission-label">
+                      <span class="permission-icon"></span>
+                      <span class="permission-title">{{ permission.title }}</span>
+                      <span class="permission-code">({{ permission.code }})</span>
+                    </label>
+                  </div>
+                  
+                  <!-- Children level 1 -->
+                  <div v-if="permission.children && permission.children.length > 0" class="permission-children">
+                    <div v-for="child in permission.children" :key="child.permissionId" class="permission-node">
+                      <div class="permission-item">
+                        <input 
+                          type="checkbox" 
+                          :id="'perm-' + child.permissionId"
+                          :checked="isPermissionSelected(child.permissionId)"
+                          @change="togglePermission(child.permissionId)"
+                          :disabled="isReadonly"
+                          class="permission-checkbox"
+                        />
+                        <label :for="'perm-' + child.permissionId" class="permission-label">
+                          <span class="permission-icon"></span>
+                          <span class="permission-title">{{ child.title }}</span>
+                          <span class="permission-code">({{ child.code }})</span>
+                        </label>
+                      </div>
+                      
+                      <!-- Children level 2 -->
+                      <div v-if="child.children && child.children.length > 0" class="permission-children">
+                        <div v-for="grandChild in child.children" :key="grandChild.permissionId" class="permission-node">
+                          <div class="permission-item">
+                            <input 
+                              type="checkbox" 
+                              :id="'perm-' + grandChild.permissionId"
+                              :checked="isPermissionSelected(grandChild.permissionId)"
+                              @change="togglePermission(grandChild.permissionId)"
+                              :disabled="isReadonly"
+                              class="permission-checkbox"
+                            />
+                            <label :for="'perm-' + grandChild.permissionId" class="permission-label">
+                              <span class="permission-icon">📄</span>
+                              <span class="permission-title">{{ grandChild.title }}</span>
+                              <span class="permission-code">({{ grandChild.code }})</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span v-if="errors.permissions" class="error-text">{{ errors.permissions }}</span>
           </div>
-
-          <!-- <div class="form-group">
-            <label class="form-label">Trạng thái</label>
-            <select 
-              v-model="formData.statusId" 
-              class="form-control"
-              :disabled="isReadonly"
-            >
-              <option :value="1">Hoạt động</option>
-              <option :value="0">Không hoạt động</option>
-            </select>
-          </div> -->
 
           <!-- View mode: Show names -->
           <div v-if="isReadonly" class="info-section">
@@ -199,7 +357,8 @@ function getPermissionName(permissionId) {
             {{ isReadonly ? 'Đóng' : 'Hủy' }}
           </button>
           <button v-if="!isReadonly" class="btn btn-primary" @click="handleSave">
-            {{ mode === 'create' ? 'Thêm mới' : 'Cập nhật' }}
+            <!-- {{ mode === 'create' ? 'Thêm mới' : 'Cập nhật' }} -->
+              Lưu
           </button>
         </div>
       </div>
@@ -393,5 +552,109 @@ function getPermissionName(permissionId) {
 
 .btn-secondary:hover {
   background: #545b62;
+}
+
+/* Permissions Tree */
+.permissions-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.loading-text,
+.empty-text {
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+  padding: 20px;
+}
+
+.permissions-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.permission-node {
+  display: flex;
+  flex-direction: column;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.permission-item:hover {
+  background: #f0f0f0;
+}
+
+.permission-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.permission-checkbox:disabled {
+  cursor: not-allowed;
+}
+
+.permission-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex: 1;
+  font-size: 13px;
+  user-select: none;
+}
+
+.permission-icon {
+  font-size: 14px;
+}
+
+.permission-title {
+  font-weight: 500;
+  color: #333;
+}
+
+.permission-code {
+  color: #666;
+  font-size: 12px;
+}
+
+.permission-children {
+  margin-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 8px;
+  margin-top: 4px;
+}
+
+.permissions-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.permissions-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.permissions-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.permissions-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>

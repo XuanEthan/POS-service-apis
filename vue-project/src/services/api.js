@@ -1,11 +1,11 @@
-import { 
-  getAccessToken, 
-  getRefreshToken, 
-  saveTokens, 
-  saveUser, 
+import {
+  getAccessToken,
+  getRefreshToken,
+  saveTokens,
+  saveUser,
   saveUserPermissions,
   clearTokens,
-  getPermissionsFromToken
+  getPermissionsFromToken,
 } from '@/utils/auth'
 
 // API Configuration
@@ -22,7 +22,7 @@ function subscribeTokenRefresh(callback) {
 
 // Notify tất cả subscribers khi refresh xong
 function onRefreshed(newToken) {
-  refreshSubscribers.forEach(callback => callback(newToken))
+  refreshSubscribers.forEach((callback) => callback(newToken))
   refreshSubscribers = []
 }
 
@@ -32,57 +32,65 @@ function onRefreshed(newToken) {
 async function refreshToken() {
   const accessToken = getAccessToken()
   const refreshTokenValue = getRefreshToken()
-  
+
   if (!accessToken || !refreshTokenValue) {
-    throw new Error('No tokens available')
+    clearTokens()
+    window.location.href = '/login'
+    throw new Error('Không tìm thấy token')
   }
-  
-  const response = await fetch(`${BASE_URL}/Account/refreshtoken`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      accessToken: accessToken,
-      refreshToken: refreshTokenValue
+
+  try {
+    const response = await fetch(`${BASE_URL}/Account/refreshtoken`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        accessToken: accessToken,
+        refreshToken: refreshTokenValue,
+      }),
     })
-  })
-  
-  const data = await response.json()
-  
-  // API trả về: { isSuccess, code, message, userId, object, accessToken, refreshToken }
-  if (data.isSuccess && data.accessToken && data.refreshToken) {
-    saveTokens(data.accessToken, data.refreshToken)
-    
-    // Cập nhật permissions từ token mới
-    const permissions = getPermissionsFromToken(data.accessToken)
-    saveUserPermissions(permissions)
-    
-    if (data.object) {
-      saveUser(data.object)
+
+    const data = await response.json()
+
+    if (data.isSuccess && data.accessToken && data.refreshToken) {
+      saveTokens(data.accessToken, data.refreshToken)
+
+      // Cập nhật permissions từ token mới
+      const permissions = getPermissionsFromToken(data.accessToken)
+      saveUserPermissions(permissions)
+
+      if (data.object) {
+        saveUser(data.object)
+      }
+      return data.accessToken
     }
-    
-    return data.accessToken
+    clearTokens()
+    window.location.href = '/login'
+    alert(data.message)
+    throw new Error(data.message || 'Refresh token thất bại')
+  } catch (error) {
+    clearTokens()
+    window.location.href = '/login'
+    throw error
   }
-  
-  throw new Error(data.message || 'Failed to refresh token')
 }
 
 // Generic API helper
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`
-  
+
   const accessToken = getAccessToken()
   const refreshTokenValue = getRefreshToken()
-  console.log(accessToken , refreshTokenValue);
+  console.log(accessToken, refreshTokenValue)
   const config = {
     headers: {
       'Content-Type': 'application/json',
-      ...options.headers
+      ...options.headers,
     },
-    ...options
+    ...options,
   }
-  
+
   // Thêm Authorization header nếu có token
   if (accessToken) {
     config.headers['Authorization'] = `Bearer ${accessToken}`
@@ -91,108 +99,109 @@ async function request(endpoint, options = {}) {
   try {
     const response = await fetch(url, config)
     // Handle 401 Unauthorized - gọi refresh token
+    console.log(response)
     if (response.status === 401) {
       if (!isRefreshing) {
         isRefreshing = true
         try {
           const newToken = await refreshToken()
           onRefreshed(newToken)
-          
+
           // Retry request với token mới
           config.headers['Authorization'] = `Bearer ${newToken}`
           const retryResponse = await fetch(url, config)
-          
-          if (!retryResponse.ok) {
-            // Nếu retry vẫn lỗi, redirect về login
+
+          // Nếu retry vẫn 401, redirect về login
+          if (retryResponse.status === 401) {
             clearTokens()
-            window.location.href = '/login'
-            return {
-              isSuccess: false,
-              code: 401,
-              message: 'Session expired. Please login again.',
-              object: null
-            }
+            // window.location.href = '/login'
+            throw new Error('Phiên đăng nhập đã hết hạn')
           }
-          
+
+          // Parse response từ retry
           const retryText = await retryResponse.text()
           if (!retryText || retryText.trim() === '') {
-            return { isSuccess: true, code: 0, message: 'Success', object: [] }
+            return null
           }
-          return JSON.parse(retryText)
+
+          const retryData = JSON.parse(retryText)
+
+          // Kiểm tra isSuccess = false với message
+          if (retryData.isSuccess === false && retryData.message) {
+            clearTokens()
+            // window.location.href = '/login'
+            alert(retryData.message)
+            throw new Error(retryData.message)
+          }
+
+          return retryData
         } catch (error) {
           clearTokens()
-          window.location.href = '/login'
-          return {
-            isSuccess: false,
-            code: 401,
-            message: 'Session expired. Please login again.',
-            object: null
-          }
+          // window.location.href = '/login'
+          console.log(error);
+          throw error
         } finally {
           isRefreshing = false
         }
       } else {
         // Đang refresh, đợi hoàn thành rồi retry
-        const newToken = await new Promise(resolve => {
-          subscribeTokenRefresh(token => resolve(token))
+        const newToken = await new Promise((resolve) => {
+          subscribeTokenRefresh((token) => resolve(token))
         })
         config.headers['Authorization'] = `Bearer ${newToken}`
         const retryResponse = await fetch(url, config)
+        
+        if (retryResponse.status === 401) {
+          clearTokens()
+          window.location.href = '/login'
+          throw new Error('Phiên đăng nhập đã hết hạn')
+        }
+
         const retryText = await retryResponse.text()
         if (!retryText || retryText.trim() === '') {
-          return { isSuccess: true, code: 0, message: 'Success', object: [] }
+          return null
         }
-        return JSON.parse(retryText)
+
+        const retryData = JSON.parse(retryText)
+
+        if (retryData.isSuccess === false && retryData.message) {
+          clearTokens()
+          window.location.href = '/login'
+          alert(retryData.message)
+          throw new Error(retryData.message)
+        }
+
+        return retryData
       }
     }
-    
+
     // Check if response is ok
     if (!response.ok) {
-      return {
-        isSuccess: false,
-        code: response.status,
-        message: `HTTP Error: ${response.status} ${response.statusText}`,
-        id: null,
-        object: null
-      }
+      throw new Error(`Lỗi HTTP: ${response.status} ${response.statusText}`)
     }
-    
+
     // Check if response has content
     const text = await response.text()
     if (!text || text.trim() === '') {
-      return {
-        isSuccess: true,
-        code: 0,
-        message: 'Success (empty response)',
-        id: null,
-        object: []
-      }
+      return null
     }
-    
+
     // Parse JSON
-    try {
-      const data = JSON.parse(text)
-      // API trả về dạng: { isSuccess, code, message, id, object }
-      return data
-    } catch (parseError) {
-      console.error('JSON Parse Error:', parseError, 'Response text:', text)
-      return {
-        isSuccess: false,
-        code: -2,
-        message: 'Invalid JSON response from server',
-        id: null,
-        object: null
-      }
+    const data = JSON.parse(text)
+
+    // Kiểm tra isSuccess = false với message -> redirect login
+    if (data.isSuccess === false && data.message) {
+      clearTokens()
+      window.location.href = '/login'
+      alert(data.message)
+      throw new Error(data.message)
     }
+
+    return data
   } catch (error) {
-    console.error('API Error:', error)
-    return {
-      isSuccess: false,
-      code: -1,
-      message: error.message || 'Network error',
-      id: null,
-      object: null
-    }
+    // Throw error để caller xử lý hiển thị message cho user
+    console.log(error)
+    throw error
   }
 }
 
@@ -204,7 +213,7 @@ export async function get(endpoint) {
 // POST request
 export async function post(endpoint, body, headers = {}) {
   let bodyToSend = body
-  const contentType = headers['Content-Type'] || (headers['content-type'] || '')
+  const contentType = headers['Content-Type'] || headers['content-type'] || ''
 
   // If caller didn't specify content-type and body is an object, send JSON
   if (!contentType) {
@@ -217,7 +226,7 @@ export async function post(endpoint, body, headers = {}) {
   return request(endpoint, {
     method: 'POST',
     headers,
-    body: bodyToSend
+    body: bodyToSend,
   })
 }
 
@@ -225,7 +234,7 @@ export async function post(endpoint, body, headers = {}) {
 export async function put(endpoint, body) {
   return request(endpoint, {
     method: 'PUT',
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   })
 }
 

@@ -32,14 +32,17 @@
       .top-navbar {
         display: flex;
         align-items: center;
-        background: #2c3e50;
+        background: #0073ba;
         padding: 0 12px;
         height: 36px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
         position: relative;
         z-index: 1000;
       }
-
+      .btn.btn-primary{
+        background-color: #0073ba !important;
+        border-color: #0073ba !important;
+      }
       .navbar-brand {
         display: flex;
         align-items: center;

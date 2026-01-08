@@ -115,14 +115,14 @@ const hasAnyQuickAction = computed(() =>
             <i class="fas fa-user-tag action-icon"></i>
             <span class="action-text">Vai trò</span>
           </RouterLink>
-          <RouterLink v-if="canAccessPermission" to="/permission" class="action-card action-purple">
-            <i class="fas fa-key action-icon"></i>
+          <!-- <RouterLink v-if="canAccessPermission" to="/permission" class="action-card action-purple">
+            <i class="fas fa-shield-alt action-icon"></i>
             <span class="action-text">Quyền</span>
           </RouterLink>
           <RouterLink v-if="canAccessRolePermission" to="/role-permission" class="action-card action-secondary">
-            <i class="fas fa-shield-alt action-icon"></i>
+            <i class="fas fa-key action-icon"></i>
             <span class="action-text">Phân quyền</span>
-          </RouterLink>
+          </RouterLink> -->
         </div>
       </div>
     </div>

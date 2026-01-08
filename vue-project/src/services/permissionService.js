@@ -1,6 +1,6 @@
 import { get, post, put, del } from './api'
 
-const ENDPOINT = '/Permission/permissions'
+const ENDPOINT = '/Permissions'
 
 export async function getPermissions() {
   return await get(ENDPOINT)

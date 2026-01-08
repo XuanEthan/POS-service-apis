@@ -1,6 +1,6 @@
 import { get, post, put, del } from './api'
 
-const ENDPOINT = '/Role/roles'
+const ENDPOINT = '/Roles'
 
 export async function getRoles() {
   return await get(ENDPOINT)

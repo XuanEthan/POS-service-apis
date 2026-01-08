@@ -241,35 +241,37 @@ onMounted(() => {
   <PermissionAlert :hasPermission="canAccessModule_user" />
 
   <div v-if="canAccessModule_user" class="page-container">
-    <!-- Page Header -->
-    <div class="page-header">
-      <h1 class="page-title">QUẢN LÝ NGƯỜI DÙNG</h1>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="page-toolbar">
-      <button v-if="canAdd" class="btn btn-primary" @click="openCreateModal"><span>+</span> Thêm mới</button>
-      <button class="btn btn-secondary" @click="fetchUsers">🔄 Tải lại</button>
+    <!-- Page Header & Toolbar -->
+    <div class="page-header-toolbar">
+      <div class="page-header">
+        <h1 class="page-title">QUẢN LÝ NGƯỜI DÙNG</h1>
+      </div>
+      <div class="page-toolbar">
+        <button v-if="canAdd" class="btn btn-primary main-color" @click="openCreateModal"><span>+</span> Thêm
+          mới</button>
+        <button class="btn btn-secondary" @click="fetchUsers">🔄 Tải lại</button>
+      </div>
     </div>
 
     <!-- Filters -->
-    <div v-if="canSearch_user" class="page-filters" style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
+    <div v-if="canSearch_user" class="page-filters"
+      style="display: flex; flex-wrap: nowrap; gap: 8px; align-items: center;">
       <select v-model="filterStatus" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Trạng thái --</option>
         <option value="1">Đã kích hoạt</option>
         <option value="2">Chưa kích hoạt</option>
         <option value="3">Khóa</option>
       </select>
-      
+
       <select v-model="filterRole" class="form-control" style="flex: 0 0 140px;">
         <option value="">-- Tên vai trò --</option>
         <option v-for="role in roles" :key="role.roleId" :value="role.roleId">
           {{ role.title }}
         </option>
       </select>
-      <input v-model="filterKeyword" class="form-control" style="flex: 0 0 250px;"
-        placeholder="Tìm theo tên đăng nhập" @keyup.enter="handleSearch" />
-      <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
+      <input v-model="filterKeyword" class="form-control" style="flex: 0 0 250px;" placeholder="Tìm theo tên đăng nhập"
+        @keyup.enter="handleSearch" />
+      <button class="btn btn-primary main-color" style="flex: 0 0 auto; white-space: nowrap;" @click="handleSearch">
         <i class="fas fa-search"></i> Tìm kiếm
       </button>
     </div>
@@ -333,9 +335,10 @@ onMounted(() => {
           </tbody>
         </table>
       </div>
-    </div>
+      <!-- </div> -->
 
-    <!-- Table Footer -->
+      <!-- Table Footer -->
+    </div>
     <div class="table-footer" v-if="!error && !loading">
       <div class="perpage">
         <label>Hiển thị</label>
@@ -349,7 +352,7 @@ onMounted(() => {
       <div class="pagination">
         <button class="pg-btn" :disabled="currentPage <= 1" @click="goToFirst">|&lt;</button>
         <button class="pg-btn" :disabled="currentPage <= 1" @click="prevPage">&lt;</button>
-        <button class="pg-btn active">{{ currentPage }} / {{ totalPages }}</button>
+        <button class="pg-btn active main-color">{{ currentPage }} / {{ totalPages }}</button>
         <button class="pg-btn" :disabled="currentPage >= totalPages" @click="nextPage">&gt;</button>
         <button class="pg-btn" :disabled="currentPage >= totalPages" @click="goToLast">&gt;|</button>
       </div>
@@ -359,9 +362,26 @@ onMounted(() => {
     <UserModal :visible="showModal" :mode="modalMode" :user="selectedUser" :roles="roles" @close="closeModal"
       @save="handleSaveUser" />
   </div>
+
 </template>
 
 <style scoped>
+/* Page Header & Toolbar on same line */
+.page-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header-toolbar .page-header {
+  margin: 0;
+}
+
+.page-header-toolbar .page-toolbar {
+  display: flex;
+  gap: 10px;
+}
+
 .page-filters {
   grid-template-columns: repeat(4, 1fr);
 }
