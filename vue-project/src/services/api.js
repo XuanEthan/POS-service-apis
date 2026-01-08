@@ -35,12 +35,12 @@ async function refreshToken() {
 
   if (!accessToken || !refreshTokenValue) {
     clearTokens()
-    window.location.href = '/login'
+    // window.location.href = '/login'
     throw new Error('Không tìm thấy token')
   }
 
   try {
-    const response = await fetch(`${BASE_URL}/Account/refreshtoken`, {
+    const response = await fetch(`${BASE_URL}/Accounts/refreshtoken`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,8 +51,8 @@ async function refreshToken() {
       }),
     })
 
+    console.log('Refresh token response:', response)
     const data = await response.json()
-
     if (data.isSuccess && data.accessToken && data.refreshToken) {
       saveTokens(data.accessToken, data.refreshToken)
 
@@ -76,13 +76,46 @@ async function refreshToken() {
   }
 }
 
+// Helper: Parse response và xử lý lỗi
+async function parseResponse(response, shouldRedirectOnError = true) {
+  // Nếu vẫn 401 sau retry, redirect
+  if (response.status === 401) {
+    clearTokens()
+    window.location.href = '/login'
+    throw new Error('Phiên đăng nhập đã hết hạn')
+  }
+
+  // Check response ok
+  if (!response.ok) {
+    throw new Error(`Lỗi HTTP: ${response.status} ${response.statusText}`)
+  }
+
+  // Parse response text
+  const text = await response.text()
+  if (!text || text.trim() === '') {
+    return null
+  }
+
+  const data = JSON.parse(text)
+
+  // Kiểm tra isSuccess = false -> có thể redirect login
+  if (data.isSuccess === false && data.message) {
+    if (shouldRedirectOnError) {
+      clearTokens()
+      window.location.href = '/login'
+    }
+    alert(data.message)
+    throw new Error(data.message)
+  }
+
+  return data
+}
+
 // Generic API helper
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`
-
   const accessToken = getAccessToken()
-  const refreshTokenValue = getRefreshToken()
-  console.log(accessToken, refreshTokenValue)
+  
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -98,108 +131,40 @@ async function request(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, config)
+
     // Handle 401 Unauthorized - gọi refresh token
-    console.log(response)
     if (response.status === 401) {
+      let newToken
+
       if (!isRefreshing) {
+        // Bắt đầu refresh token
         isRefreshing = true
         try {
-          const newToken = await refreshToken()
+          newToken = await refreshToken()
           onRefreshed(newToken)
-
-          // Retry request với token mới
-          config.headers['Authorization'] = `Bearer ${newToken}`
-          const retryResponse = await fetch(url, config)
-
-          // Nếu retry vẫn 401, redirect về login
-          if (retryResponse.status === 401) {
-            clearTokens()
-            // window.location.href = '/login'
-            throw new Error('Phiên đăng nhập đã hết hạn')
-          }
-
-          // Parse response từ retry
-          const retryText = await retryResponse.text()
-          if (!retryText || retryText.trim() === '') {
-            return null
-          }
-
-          const retryData = JSON.parse(retryText)
-
-          // Kiểm tra isSuccess = false với message
-          if (retryData.isSuccess === false && retryData.message) {
-            clearTokens()
-            // window.location.href = '/login'
-            alert(retryData.message)
-            throw new Error(retryData.message)
-          }
-
-          return retryData
         } catch (error) {
           clearTokens()
-          // window.location.href = '/login'
-          console.log(error);
+          window.location.href = '/login'
           throw error
         } finally {
           isRefreshing = false
         }
       } else {
-        // Đang refresh, đợi hoàn thành rồi retry
-        const newToken = await new Promise((resolve) => {
+        // Đang refresh, đợi hoàn thành
+        newToken = await new Promise((resolve) => {
           subscribeTokenRefresh((token) => resolve(token))
         })
-        config.headers['Authorization'] = `Bearer ${newToken}`
-        const retryResponse = await fetch(url, config)
-        
-        if (retryResponse.status === 401) {
-          clearTokens()
-          window.location.href = '/login'
-          throw new Error('Phiên đăng nhập đã hết hạn')
-        }
-
-        const retryText = await retryResponse.text()
-        if (!retryText || retryText.trim() === '') {
-          return null
-        }
-
-        const retryData = JSON.parse(retryText)
-
-        if (retryData.isSuccess === false && retryData.message) {
-          clearTokens()
-          window.location.href = '/login'
-          alert(retryData.message)
-          throw new Error(retryData.message)
-        }
-
-        return retryData
       }
+
+      // Retry request với token mới
+      config.headers['Authorization'] = `Bearer ${newToken}`
+      const retryResponse = await fetch(url, config)
+      return parseResponse(retryResponse, false)
     }
 
-    // Check if response is ok
-    if (!response.ok) {
-      throw new Error(`Lỗi HTTP: ${response.status} ${response.statusText}`)
-    }
-
-    // Check if response has content
-    const text = await response.text()
-    if (!text || text.trim() === '') {
-      return null
-    }
-
-    // Parse JSON
-    const data = JSON.parse(text)
-
-    // Kiểm tra isSuccess = false với message -> redirect login
-    if (data.isSuccess === false && data.message) {
-      clearTokens()
-      window.location.href = '/login'
-      alert(data.message)
-      throw new Error(data.message)
-    }
-
-    return data
+    // Parse response bình thường
+    return parseResponse(response, true)
   } catch (error) {
-    // Throw error để caller xử lý hiển thị message cho user
     console.log(error)
     throw error
   }

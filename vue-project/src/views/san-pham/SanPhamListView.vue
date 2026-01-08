@@ -279,11 +279,11 @@ onMounted(() => {
             <thead>
               <tr>
                 <th style="width: 30px" class="col-stt">#</th>
-                <th style="width: 100px" class="col-action">Thao tác</th>
                 <th style="width: 100px">Mã sản phẩm</th>
                 <th style="width: 180px">Danh mục</th>
                 <th>Tên sản phẩm</th>
                 <th style="width: 120px" class="text-right">Giá vốn</th>
+                <th style="width: 100px" class="col-action">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -292,6 +292,11 @@ onMounted(() => {
               </tr>
               <tr v-for="(product, index) in paginatedProducts" :key="product.sanphamId || product.Sku || index">
                 <td class="col-stt">{{ (currentPage - 1) * perPage + index + 1 }}</td>
+                <td class="sku-col">{{ product.Sku || product.sku }}</td>
+                <td class="barcode-col">{{ '' }}</td>
+                <td class="product-name">{{ product.Name || product.name }}</td>
+                <td class="text-right price-col">{{ formatCurrency(product.CostPrice || product.costPrice || 0) }}
+                </td>
                 <td class="col-action">
                   <div class="dropdown" v-if="canEdit || canDelete || canView">
                     <button class="row-action-btn">⚙</button>
@@ -303,11 +308,6 @@ onMounted(() => {
                         Xóa</a>
                     </div>
                   </div>
-                </td>
-                <td class="sku-col">{{ product.Sku || product.sku }}</td>
-                <td class="barcode-col">{{ '' }}</td>
-                <td class="product-name">{{ product.Name || product.name }}</td>
-                <td class="text-right price-col">{{ formatCurrency(product.CostPrice || product.costPrice || 0) }}
                 </td>
               </tr>
             </tbody>

@@ -296,11 +296,11 @@ onMounted(() => {
             <tr>
               <th class="col-check"><input type="checkbox" v-model="checkAll" @change="handleCheckAll" /></th>
               <th class="col-stt">STT</th>
-              <th class="col-action">Thao tác</th>
               <th>Tên đăng nhập</th>
               <th>Mật khẩu</th>
               <th>Vai trò</th>
               <th>Trạng thái</th>
+              <th class="col-action">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -310,6 +310,16 @@ onMounted(() => {
             <tr v-for="(user, index) in users" :key="user.userId">
               <td class="col-check"><input type="checkbox" /></td>
               <td class="col-stt">{{ (Number(currentPage) - 1) * Number(perPage) + index + 1 }}</td>
+              <td>{{ user.userName }}</td>
+              <td>********</td>
+              <td>
+                <span
+                :class="(user.roleTiTle === null || user.roleTiTle === '') ? 'badge badge-warning' : 'badge badge-info'">{{
+                  user.roleTiTle || 'Chưa gán vai trò' }}</span>
+              </td>
+              <td>
+                <span class="badge" :class="statusBadgeClass(user.statusId)">{{ getStatusText(user.statusId) }}</span>
+              </td>
               <td class="col-action">
                 <div class="dropdown" v-if="canEdit || canView || canDelete">
                   <button class="row-action-btn">⚙</button>
@@ -320,16 +330,6 @@ onMounted(() => {
                     <a v-if="canDelete" class="dropdown-item" @click="handleDelete(user.userId)">🗑️ Xóa</a>
                   </div>
                 </div>
-              </td>
-              <td>{{ user.userName }}</td>
-              <td>********</td>
-              <td>
-                <span
-                  :class="(user.roleTiTle === null || user.roleTiTle === '') ? 'badge badge-warning' : 'badge badge-info'">{{
-                    user.roleTiTle || 'Chưa gán vai trò' }}</span>
-              </td>
-              <td>
-                <span class="badge" :class="statusBadgeClass(user.statusId)">{{ getStatusText(user.statusId) }}</span>
               </td>
             </tr>
           </tbody>

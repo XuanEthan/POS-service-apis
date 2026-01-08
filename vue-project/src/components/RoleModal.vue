@@ -1,6 +1,8 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { generateUUID, EMPTY_GUID } from '@/utils/uuid'
+import { getPermissions } from '@/services/permissionService'
+import { getRolePermissions } from '@/services/rolePermissionService'
 
 const props = defineProps({
   visible: {

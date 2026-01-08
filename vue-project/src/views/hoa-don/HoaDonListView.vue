@@ -285,7 +285,6 @@ onMounted(() => {
           <tr>
             <th class="col-check"><input type="checkbox" v-model="checkAll" @change="handleCheckAll" /></th>
             <th class="col-stt">STT</th>
-            <th class="col-action">Thao tác</th>
             <th>Mã hóa đơn</th>
             <th>Khách hàng</th>
             <th>Số điện thoại</th>
@@ -293,6 +292,7 @@ onMounted(() => {
             <th>Hạn TT</th>
             <th class="text-right">Số tiền</th>
             <th>Trạng thái</th>
+            <th class="col-action">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -302,9 +302,16 @@ onMounted(() => {
           <tr v-for="(invoice, index) in filteredInvoices" :key="invoice.id">
             <td class="col-check"><input type="checkbox" /></td>
             <td class="col-stt">{{ index + 1 }}</td>
+            <td>{{ invoice.invoiceNumber }}</td>
+            <td>{{ invoice.customerName }}</td>
+            <td>{{ invoice.customerPhone || '-' }}</td>
+            <td>{{ invoice.invoiceDate }}</td>
+            <td>{{ invoice.dueDate }}</td>
+            <td class="text-right">{{ formatCurrency(invoice.totalAmount || 0) }}</td>
+            <td><span :class="getBadgeClass(invoice.status)">{{ getBadgeText(invoice.status) }}</span></td>
             <td class="col-action">
               <div class="dropdown">
-                <button class="row-action-btn"><i class="fas fa-cog"></i></button>
+                    <button class="row-action-btn">⚙</button>
                 <div class="dropdown-menu">
                   <a v-if="canView_hoadon" class="dropdown-item" @click="openViewModal(invoice)"><i class="fas fa-eye"></i> Xem chi tiết</a>
                   <a v-if="canEdit_hoadon" class="dropdown-item" @click="openEditModal(invoice)"><i class="fas fa-edit"></i> Sửa</a>
@@ -313,13 +320,6 @@ onMounted(() => {
                 </div>
               </div>
             </td>
-            <td>{{ invoice.invoiceNumber }}</td>
-            <td>{{ invoice.customerName }}</td>
-            <td>{{ invoice.customerPhone || '-' }}</td>
-            <td>{{ invoice.invoiceDate }}</td>
-            <td>{{ invoice.dueDate }}</td>
-            <td class="text-right">{{ formatCurrency(invoice.totalAmount || 0) }}</td>
-            <td><span :class="getBadgeClass(invoice.status)">{{ getBadgeText(invoice.status) }}</span></td>
           </tr>
         </tbody>
       </table>
