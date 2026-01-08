@@ -4,6 +4,11 @@ namespace Baocao2.Services
 {
     public class UserService
     {
+        public bool isRoleUsed(Guid RoleId)
+        {
+             return Users.UserList.Any(u => u.RoleId == RoleId);
+        }
+
         public IEnumerable<Vw_User> GetVwListQuery(User_Search? filter) // join tu code thay vi
         {
             var query =

@@ -11,29 +11,29 @@ namespace Baocao2.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly UserService _userService;
-        public UserController(UserService userService)
+        public UsersController(UserService userService)
         {
             _userService = userService;
         }
 
-        [HttpGet("users")]
+        [HttpGet]
         [ActionFilter(PERMISSION_FIX.User_LIST)]
         public ResultModel GetList([FromQuery] User_Search? user_Search)
         {
             return _userService.GetVwList(user_Search);
         }
 
-        [HttpGet("users/{id}")]
+        [HttpGet("{id}")]
         [ActionFilter(PERMISSION_FIX.User_VIEW)]
         public ResultModel GetById(Guid id)
         {
             return _userService.GetById(id);
         }
 
-        [HttpPost("users")]
+        [HttpPost]
         [ActionFilter(PERMISSION_FIX.User_ADD)]
         public ResultModel Insert([FromBody] User user)
         {
@@ -42,7 +42,7 @@ namespace Baocao2.Controllers
             return _userService.Insert(user);
         }
 
-        [HttpPut("users/{id}")]
+        [HttpPut("{id}")]
         [ActionFilter(PERMISSION_FIX.User_EDIT)]
         public ResultModel Update(Guid id, [FromBody] User user)
         {
@@ -51,7 +51,7 @@ namespace Baocao2.Controllers
             return _userService.Update(id, user);
         }
 
-        [HttpDelete("users/{id}")]
+        [HttpDelete("{id}")]
         [ActionFilter(PERMISSION_FIX.User_DELETE)]
         public ResultModel Delete(Guid id)
         {

@@ -9,10 +9,10 @@ namespace Baocao2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountsController : ControllerBase
     {
         private readonly AccountService _accountService;
-        public AccountController(AccountService accountService)
+        public AccountsController(AccountService accountService)
         {
             _accountService = accountService;
         }

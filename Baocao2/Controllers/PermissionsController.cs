@@ -10,16 +10,16 @@ namespace Baocao2.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class PermissionController : ControllerBase
+    public class PermissionsController : ControllerBase
     {
         private readonly PermissionService _permissionService;
 
-        public PermissionController(PermissionService permissionService)
+        public PermissionsController(PermissionService permissionService)
         {
             _permissionService = permissionService;
         }
 
-        [HttpGet("permissions")]
+        [HttpGet]
         [ActionFilter(PERMISSION_FIX.Permission_LIST)]
         public ResultModel GetList()
         {

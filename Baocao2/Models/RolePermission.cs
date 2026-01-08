@@ -12,12 +12,28 @@
         public DateTime? DateCreated { get; set; }
         public DateTime? DateEdited { get; set; }
     }
-    public class RolePermission_Add
+
+    public class Vw_Rolepermission
     {
         public Guid RolePermissionId { get; set; }
         public Guid RoleId { get; set; }
-        List<Guid>? PermissionIds { get; set; }
+        public Guid PermissionId { get; set; }
+        public int? IsDelete { get; set; }
+        public int? StatusId { get; set; }
+        public Guid UseridCreated { get; set; }
+        public Guid UseridEdited { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public DateTime? DateEdited { get; set; }
+        public string Permission_Tilte { get; set; }
     }
+
+    public class RolePermission_Save
+    {
+        //public Guid RolePermissionId { get; set; }
+        public Guid RoleId { get; set; }
+        public List<Guid> PermissionIds { get; set; }
+    }
+
     public static class RolePermissions
     {
         public static List<RolePermission> List = new List<RolePermission>()

@@ -57,7 +57,7 @@ var tokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidati
     ValidateAudience = false,
     ValidateLifetime = true,
     ValidateIssuerSigningKey = true,
-    ClockSkew = TimeSpan.FromSeconds(10),
+    ClockSkew = TimeSpan.FromSeconds(5),
     IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(secretKey),
 };
 

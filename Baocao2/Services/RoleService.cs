@@ -4,6 +4,7 @@ namespace Baocao2.Services
 {
     public class RoleService
     {
+
         public IEnumerable<Role> GetListQuery()
         {
             var query = Roles.roles.Where(r=>r.RoleId.ToString() != Role_Fix.ADMIN && r.IsDelete != IsDelete.Xoa).AsEnumerable();
@@ -131,13 +132,6 @@ namespace Baocao2.Services
                 return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.NotOK, Message = "Không thể xóa vai trò có vai trò con", Id = null, Object = null };
             }
 
-            var hasUsers = Users.UserList.Any(u => u.RoleId == roleId);
-            if (hasUsers)
-            {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.NotOK, Message = "Không thể xóa vai trò đang được sử dụng bởi người dùng", Id = null, Object = null };
-            }
-
-            // Xóa tất cả phân quyền liên quan đến vai trò này
             Roles.roles.Remove(existingRole);
             return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Xóa vai trò thành công", Id = roleId, Object = null };
         }
@@ -157,9 +151,7 @@ namespace Baocao2.Services
                     return true;
                 }
             }
-
             return false;
         }
-
     }
 }

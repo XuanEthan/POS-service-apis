@@ -4,14 +4,53 @@ namespace Baocao2.Services
 {
     public class RolePermissionService
     {
-        public IEnumerable<RolePermission> GetListQuery(RolePermission_Search? filter)
+        public IEnumerable<Vw_Rolepermission> GetVListQuery(RolePermission_Search? filter)
         {
-            var query = RolePermissions.List.Where(rp=>rp.RoleId.ToString() != Role_Fix.ADMIN && rp.IsDelete != IsDelete.Xoa).AsEnumerable();
-           if(filter != null)
+            var query = from rp in RolePermissions.List
+                        join p in Permissions.permissions on rp.PermissionId equals p.PermissionId
+                        where rp.RoleId.ToString() != Role_Fix.ADMIN && rp.IsDelete != IsDelete.Xoa
+                        select new Vw_Rolepermission
+                        {
+                            RolePermissionId = rp.RolePermissionId,
+                            RoleId = rp.RoleId,
+                            PermissionId = rp.PermissionId,
+                            IsDelete = rp.IsDelete,
+                            StatusId = rp.StatusId,
+                            UseridCreated = rp.UseridCreated,
+                            UseridEdited = rp.UseridEdited,
+                            DateCreated = rp.DateCreated,
+                            DateEdited = rp.DateEdited,
+                            Permission_Tilte = p.Title
+                        };
+            if (filter != null)
             {
                 if (filter.RoleId != Guid.Empty)
                 {
-                 query = query.Where(rp => rp.RoleId == filter.RoleId);
+                    query = query.Where(rp => rp.RoleId == filter.RoleId);
+                }
+                if (filter.PermissionId != Guid.Empty)
+                {
+                    query = query.Where(rp => rp.PermissionId == filter.PermissionId);
+                }
+            }
+            return query;
+        }
+
+        public ResultModel GetVList(RolePermission_Search? filter)
+        {
+            var query = GetVListQuery(filter);
+            var res = query.ToList();
+            return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = ResultModel.BuildMessage(ResultModel.ResultCode.Ok), Id = null, Object = res };
+        }
+
+        public IEnumerable<RolePermission> GetListQuery(RolePermission_Search? filter)
+        {
+            var query = RolePermissions.List.Where(rp => rp.RoleId.ToString() != Role_Fix.ADMIN && rp.IsDelete != IsDelete.Xoa).AsEnumerable();
+            if (filter != null)
+            {
+                if (filter.RoleId != Guid.Empty)
+                {
+                    query = query.Where(rp => rp.RoleId == filter.RoleId);
                 }
                 if (filter.PermissionId != Guid.Empty)
                 {
@@ -39,7 +78,7 @@ namespace Baocao2.Services
             return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = ResultModel.BuildMessage(ResultModel.ResultCode.Ok), Id = rolePermissionId, Object = rolePermission };
         }
 
-        public ResultModel Insert(RolePermission rolePermission)
+        public ResultModel PhanQuyen(RolePermission_Save rolePermission) // logic phân quyền
         {
             if (rolePermission == null)
             {
@@ -52,132 +91,38 @@ namespace Baocao2.Services
                 return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.RoleId_Error, Message = "Vai trò không tồn tại", Id = null, Object = null };
             }
 
-            var permissionExists = Permissions.permissions.FirstOrDefault(p => p.PermissionId == rolePermission.PermissionId);
-            if (permissionExists == null)
+            var existingRolePermissions = RolePermissions.List.Where(rp => rp.RoleId == rolePermission.RoleId).ToList();
+            foreach (var item in rolePermission.PermissionIds)
             {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.Does_Not_Exists, Message = "Quyền không tồn tại", Id = null, Object = null };
-            }
-
-            var exists = RolePermissions.List.FirstOrDefault(rp => rp.RoleId == rolePermission.RoleId && rp.PermissionId == rolePermission.PermissionId);
-            if (exists != null)
-            {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.Exists, Message = "Phân quyền đã tồn tại", Id = null, Object = null };
-            }
-
-            var newRolePermission = new RolePermission
-            {
-                RolePermissionId = Guid.NewGuid(),
-                RoleId = rolePermission.RoleId,
-                PermissionId = rolePermission.PermissionId,
-                IsDelete = rolePermission.IsDelete,
-                UseridCreated = rolePermission.UseridCreated,
-                DateCreated = rolePermission.DateCreated,
-            };
-
-            RolePermissions.List.Add(newRolePermission);
-            return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Thêm phân quyền thành công", Id = newRolePermission.RolePermissionId, Object = newRolePermission };
+                if (existingRolePermissions.Any(rp => rp.PermissionId == item))
+                {
+                    continue;
+                }
+                var newObject = new RolePermission
+                {
+                    RolePermissionId = Guid.NewGuid(),
+                    RoleId = rolePermission.RoleId,
+                    PermissionId = item,
+                };
+                RolePermissions.List.Add(newObject);
+            } 
+            RolePermissions.List.RemoveAll(rp => rp.RoleId == rolePermission.RoleId && !rolePermission.PermissionIds.Contains(rp.PermissionId));
+            return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Thao tác thành công", Id = null, Object = null };
         }
 
-        public ResultModel Update(Guid rolePermissionId, RolePermission rolePermission)
+        public ResultModel Delete(Guid RoleId)
         {
-            if (rolePermission == null)
+            if(RoleId == Guid.Empty)
             {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.InvalidateData, Message = "Thông tin không hợp lệ", Id = null, Object = null };
+                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.RoleId_Error, Message = "RoleId không hợp lệ", Id = null, Object = null };
             }
-
-            var existingRolePermission = RolePermissions.List.FirstOrDefault(rp => rp.RolePermissionId == rolePermissionId);
-            if (existingRolePermission == null)
+            var rolePermissionsExists = RolePermissions.List.Any(rp => rp.RoleId == RoleId);
+            if(!rolePermissionsExists)
             {
                 return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.Does_Not_Exists, Message = "Phân quyền không tồn tại", Id = null, Object = null };
             }
-
-            var roleExists = Roles.roles.FirstOrDefault(r => r.RoleId == rolePermission.RoleId);
-            if (roleExists == null)
-            {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.RoleId_Error, Message = "Vai trò không tồn tại", Id = null, Object = null };
-            }
-
-            var permissionExists = Permissions.permissions.FirstOrDefault(p => p.PermissionId == rolePermission.PermissionId);
-            if (permissionExists == null)
-            {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.Does_Not_Exists, Message = "Quyền không tồn tại", Id = null, Object = null };
-            }
-
-            var duplicate = RolePermissions.List.FirstOrDefault(rp => rp.RoleId == rolePermission.RoleId && rp.PermissionId == rolePermission.PermissionId && rp.RolePermissionId != rolePermissionId);
-            if (duplicate != null)
-            {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.Exists, Message = "Phân quyền đã tồn tại", Id = null, Object = null };
-            }
-
-            existingRolePermission.RoleId = rolePermission.RoleId;
-            existingRolePermission.PermissionId = rolePermission.PermissionId;
-            existingRolePermission.IsDelete = rolePermission.IsDelete;
-            existingRolePermission.UseridEdited = rolePermission.UseridEdited;
-            existingRolePermission.DateEdited = rolePermission.DateEdited;
-
-            return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Cập nhật phân quyền thành công", Id = existingRolePermission.RolePermissionId, Object = existingRolePermission };
+            RolePermissions.List.RemoveAll(rp => rp.RoleId == RoleId); // await
+            return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Xóa phân quyền thành công", Id = null, Object = null };
         }
-
-        public ResultModel Delete(Guid rolePermissionId)
-        {
-            var existingRolePermission = RolePermissions.List.FirstOrDefault(rp => rp.RolePermissionId == rolePermissionId);
-            if (existingRolePermission == null)
-            {
-                return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.Does_Not_Exists, Message = "Phân quyền không tồn tại", Id = null, Object = null };
-            }
-
-            RolePermissions.List.Remove(existingRolePermission);
-            return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Xóa phân quyền thành công", Id = rolePermissionId, Object = null };
-        }
-
-        //public ResultModel GetPermissionsByRole(Guid roleId)
-        //{
-        //    var roleExists = Roles.roles.FirstOrDefault(r => r.RoleId == roleId);
-        //    if (roleExists == null)
-        //    {
-        //        return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.RoleId_Error, Message = "Vai trò không tồn tại", Id = null, Object = null };
-        //    }
-
-        //    var rolePermissions = RolePermissions.List.Where(rp => rp.RoleId == roleId).ToList();
-        //    var permissionIds = rolePermissions.Select(rp => rp.PermissionId).ToList();
-        //    var permissions = Permissions.permissions.Where(p => permissionIds.Contains(p.PermissionId)).ToList();
-
-        //    return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = ResultModel.BuildMessage(ResultModel.ResultCode.Ok), Id = roleId, Object = permissions };
-        //}
-
-        //public ResultModel AssignPermissionsToRole(Guid roleId, List<Guid> permissionIds)
-        //{
-        //    //var roleExists = Roles.roles.FirstOrDefault(r => r.RoleId == roleId);
-        //    var roleExists = _roleService.GetById(roleId);
-        //    if (roleExists == null)
-        //    {
-        //        return new ResultModel { IsSuccess = false, Code = ResultModel.ResultCode.RoleId_Error, Message = "Vai trò không tồn tại", Id = null, Object = null };
-        //    }
-
-        //    var existingRolePermissions = RolePermissions.List.Where(rp => rp.RoleId == roleId).ToList();
-        //    foreach (var rp in existingRolePermissions)
-        //    {
-        //        RolePermissions.List.Remove(rp);
-        //    }
-
-        //    foreach (var permissionId in permissionIds)
-        //    {
-        //        var permissionExists = _permissionService.GetById(permissionId);
-        //        if (permissionExists != null)
-        //        {
-        //            var newRolePermission = new RolePermission
-        //            {
-        //                RolePermissionId = Guid.NewGuid(),
-        //                RoleId = roleId,
-        //                PermissionId = permissionId,
-        //                IsDelete = 0,
-        //                StatusId = 1
-        //            };
-        //            RolePermissions.List.Add(newRolePermission);
-        //        }
-        //    }
-
-        //    return new ResultModel { IsSuccess = true, Code = ResultModel.ResultCode.Ok, Message = "Gán quyền cho vai trò thành công", Id = roleId, Object = null };
-        //}
     }
 }

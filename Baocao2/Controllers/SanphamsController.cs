@@ -8,44 +8,44 @@ namespace Baocao2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SanphamController : ControllerBase
+    public class SanphamsController : ControllerBase
     {
         private readonly SanphamService _sanphamService;
-        public SanphamController(SanphamService sanphamService)
+        public SanphamsController(SanphamService sanphamService)
         {
             _sanphamService = sanphamService;
         }
 
         // GET: api/<SanphamController>
-        [HttpGet("sanphams")]
+        [HttpGet]
         public ResultModel GetList([FromQuery] Sanpham_Search sanpham_Search)
         {
             return _sanphamService.GetVList(sanpham_Search);
         }
 
         // GET api/<SanphamController>/5
-        [HttpGet("sanphams/{id}")]
+        [HttpGet("{id}")]
         public ResultModel GetById(Guid id)
         {
             return _sanphamService.GetById(id);
         }
 
         // POST api/<SanphamController>
-        [HttpPost("sanphams")]
+        [HttpPost]
         public ResultModel Post([FromBody] Sanpham sanpham)
         {
             return _sanphamService.insert(sanpham);
         }
 
         // PUT api/<SanphamController>/5
-        [HttpPut("sanphams/{id}")]
+        [HttpPut("{id}")]
         public ResultModel Put(Guid id, [FromBody] Sanpham sanpham)
         {
             return _sanphamService.Update(sanpham);
         }
 
         // DELETE api/<SanphamController>/5
-        [HttpDelete("sanphams/{id}")]
+        [HttpDelete("{id}")]
         public ResultModel Delete(Guid id)
         {
             return _sanphamService.Delete(id);
